@@ -32,6 +32,40 @@
     --header-h: 56px;
     --list-w: 400px;
   }
+  body.light {
+    --bg: #FFFFFF;
+    --surface: #F6F8FA;
+    --surface2: #EAEEF2;
+    --surface3: #D0D7DE;
+    --border: #D0D7DE;
+    --border2: #AFB8C1;
+    --text: #1F2328;
+    --text2: #57606A;
+    --text3: #8C959F;
+    --accent: #0969DA;
+    --accent-dim: #DDF4FF;
+    --milestone: #BF8700;
+    --milestone-dim: #FFF8C5;
+    --summary: #8250DF;
+    --summary-dim: #FBEFFF;
+    --today: #CF222E;
+  }
+  /* Theme toggle button */
+  #theme-toggle {
+    display: flex; align-items: center; gap: 6px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text2);
+    cursor: pointer;
+    font-family: 'Outfit', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  #theme-toggle:hover { background: var(--surface3); color: var(--text); }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; overflow: hidden; }
   body {
@@ -207,6 +241,36 @@
     font-size: 11px;
     color: var(--text2);
     padding: 0 6px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background .1s, color .1s;
+    position: relative;
+  }
+  .task-date:hover {
+    background: var(--surface3);
+    color: var(--text);
+  }
+  .task-date.editing {
+    padding: 0;
+    background: transparent;
+    cursor: default;
+  }
+  .inline-date-input {
+    width: 100%;
+    height: 100%;
+    padding: 2px 6px;
+    background: var(--surface2);
+    border: 1.5px solid var(--accent);
+    border-radius: 4px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(88,166,255,.15);
+    color-scheme: dark;
+  }
+  body.light .inline-date-input {
+    color-scheme: light;
   }
   .task-actions {
     display: flex;
@@ -216,6 +280,42 @@
     transition: opacity .1s;
   }
   .task-row:hover .task-actions { opacity: 1; }
+
+  /* Drag handle */
+  .drag-grip {
+    flex-shrink: 0;
+    width: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    cursor: grab;
+    color: var(--text3);
+    transition: opacity .1s;
+    margin-right: 2px;
+  }
+  .task-row:hover .drag-grip { opacity: 1; }
+  .drag-grip:active { cursor: grabbing; }
+
+  /* Drop indicator */
+  .drop-indicator {
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    pointer-events: none;
+    z-index: 20;
+    border-radius: 1px;
+    box-shadow: 0 0 6px var(--accent);
+  }
+  .drop-indicator.top { top: -1px; }
+  .drop-indicator.bottom { bottom: -1px; }
+
+  /* Row being dragged */
+  .task-row.dragging-row {
+    opacity: .4;
+    background: var(--accent-dim) !important;
+  }
   .act-btn {
     width: 20px; height: 20px;
     display: flex; align-items: center; justify-content: center;
@@ -650,6 +750,7 @@
     <button class="zoom-btn active" data-zoom="days" onclick="setZoom('days')">Jours</button>
     <button class="zoom-btn" data-zoom="weeks" onclick="setZoom('weeks')">Semaines</button>
     <button class="zoom-btn" data-zoom="months" onclick="setZoom('months')">Mois</button>
+    <button class="zoom-btn" data-zoom="years" onclick="setZoom('years')">Années</button>
   </div>
   <button class="tb-btn" onclick="centerToday()" title="Centrer sur aujourd'hui">
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><circle cx="7" cy="7" r="1.5" fill="currentColor"/></svg>
@@ -658,6 +759,10 @@
   <button class="tb-btn" onclick="fitToView()" title="Ajuster à la vue">
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5V2h3M9 2h3v3M12 9v3H9M5 12H2v-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     Ajuster
+  </button>
+  <button id="theme-toggle" onclick="toggleTheme()" title="Basculer thème clair / sombre">
+    <svg id="theme-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><line x1="7" y1="1" x2="7" y2="2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="7" y1="11.5" x2="7" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="1" y1="7" x2="2.5" y2="7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="11.5" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="2.93" y1="2.93" x2="4" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="10" y1="10" x2="11.07" y2="11.07" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="11.07" y1="2.93" x2="10" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="4" y1="10" x2="2.93" y2="11.07" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <span id="theme-label">Clair</span>
   </button>
   <div id="toolbar-right">
     <button class="tb-btn" onclick="saveProject()" title="Sauvegarder en JSON">
@@ -813,17 +918,61 @@
 let tasks = [];
 let nextId = 1;
 let selectedTaskId = null;
+let dragState = null; // { taskId, startY, moved }
 let currentZoom = 'days'; // 'days' | 'weeks' | 'months'
+let currentTheme = 'dark'; // 'dark' | 'light'
+
+// Color palettes for screen rendering (header) and SVG export
+const THEMES = {
+  dark: {
+    bg:        '#0D1117',
+    surface:   '#161B22',
+    surface2:  '#1C2128',
+    border:    '#30363D',
+    text:      '#E6EDF3',
+    text2:     '#8B949E',
+    accent:    '#58A6FF',
+    today:     '#FF6B6B',
+    rowEven:   '#0D1117',
+    rowOdd:    '#111820',
+    rowSum:    '#1A1A2E',
+    legendBg:  '#161B22',
+  },
+  light: {
+    bg:        '#FFFFFF',
+    surface:   '#F6F8FA',
+    surface2:  '#EAEEF2',
+    border:    '#D0D7DE',
+    text:      '#1F2328',
+    text2:     '#57606A',
+    accent:    '#0969DA',
+    today:     '#CF222E',
+    rowEven:   '#FFFFFF',
+    rowOdd:    '#F6F8FA',
+    rowSum:    '#F3EEFF',
+    legendBg:  '#F6F8FA',
+  }
+};
+
+function toggleTheme() {
+  currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.body.classList.toggle('light', currentTheme === 'light');
+  document.getElementById('theme-label').textContent = currentTheme === 'dark' ? 'Clair' : 'Sombre';
+  render();
+}
 let editingTaskId = null;
 let editingParentId = null;
 let editingForcedType = null;
 
 // Zoom config: px per day
-const ZOOM_CONFIG = { days: 28, weeks: 10, months: 4 };
+const ZOOM_CONFIG = { days: 28, weeks: 10, months: 4, years: 1.5 };
 
 function getPxPerDay() { return ZOOM_CONFIG[currentZoom]; }
 
-function today() { return new Date().toISOString().slice(0,10); }
+function today() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
 
 function parseDate(s) {
   if (!s) return null;
@@ -844,7 +993,7 @@ function dateDiff(a, b) { // days between two date strings
 function addDays(dateStr, n) {
   const d = parseDate(dateStr);
   d.setDate(d.getDate() + n);
-  return d.toISOString().slice(0,10);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
 function minDate(a, b) { return a < b ? a : b; }
@@ -1005,19 +1154,22 @@ function renderTaskList() {
     label.title = task.name;
     nameCell.appendChild(label);
 
+    // Drag grip handle
+    const grip = document.createElement('div');
+    grip.className = 'drag-grip';
+    grip.innerHTML = '<svg width="10" height="14" viewBox="0 0 10 14" fill="none"><circle cx="3" cy="3" r="1.2" fill="currentColor"/><circle cx="7" cy="3" r="1.2" fill="currentColor"/><circle cx="3" cy="7" r="1.2" fill="currentColor"/><circle cx="7" cy="7" r="1.2" fill="currentColor"/><circle cx="3" cy="11" r="1.2" fill="currentColor"/><circle cx="7" cy="11" r="1.2" fill="currentColor"/></svg>';
+    grip.title = 'Glisser pour déplacer';
+    grip.addEventListener('mousedown', (e) => { e.stopPropagation(); startRowDrag(e, task.id); });
+    // Insert grip at the very start of nameCell
+    nameCell.insertBefore(grip, nameCell.firstChild);
+
     row.appendChild(nameCell);
 
-    // Dates
-    const startCell = document.createElement('div');
-    startCell.className = 'task-date';
-    startCell.style.textAlign = 'center';
-    startCell.textContent = formatDate(task.startDate);
+    // Dates — inline editable
+    const startCell = makeInlineDateCell(task, 'start', isMilestone);
     row.appendChild(startCell);
 
-    const endCell = document.createElement('div');
-    endCell.className = 'task-date';
-    endCell.style.textAlign = 'center';
-    endCell.textContent = isMilestone ? '—' : formatDate(task.endDate);
+    const endCell = makeInlineDateCell(task, 'end', isMilestone);
     row.appendChild(endCell);
 
     // Actions
@@ -1050,6 +1202,75 @@ function renderTaskList() {
     row.appendChild(actions);
     body.appendChild(row);
   });
+}
+
+// ─── INLINE DATE EDITING ───
+function makeInlineDateCell(task, field, isMilestone) {
+  const cell = document.createElement('div');
+  cell.className = 'task-date';
+  cell.style.textAlign = 'center';
+
+  function showLabel() {
+    cell.classList.remove('editing');
+    if (field === 'end' && isMilestone) {
+      cell.textContent = '—';
+      return;
+    }
+    cell.textContent = formatDate(field === 'start' ? task.startDate : task.endDate);
+  }
+
+  function activateInput(e) {
+    e.stopPropagation();
+    if (field === 'end' && isMilestone) return; // jalons : fin non éditable
+    cell.classList.add('editing');
+    cell.textContent = '';
+
+    const input = document.createElement('input');
+    input.type = 'date';
+    input.className = 'inline-date-input';
+    input.value = field === 'start' ? task.startDate : task.endDate;
+    cell.appendChild(input);
+
+    // Ouvrir le picker natif immédiatement
+    setTimeout(() => { input.focus(); }, 30);
+
+    function commit() {
+      const val = input.value;
+      if (!val) { showLabel(); return; }
+
+      // Validation : fin >= début
+      if (field === 'start') {
+        if (val > task.endDate) {
+          // Décaler la fin du même écart
+          const diff = dateDiff(task.startDate, task.endDate);
+          task.startDate = val;
+          task.endDate = addDays(val, diff);
+        } else {
+          task.startDate = val;
+        }
+      } else {
+        if (val < task.startDate) {
+          input.style.borderColor = 'var(--danger)';
+          input.title = 'La date de fin ne peut pas être antérieure au début';
+          setTimeout(() => { input.style.borderColor = ''; input.title = ''; }, 1500);
+          return;
+        }
+        task.endDate = val;
+      }
+      render();
+    }
+
+    let cancelled = false;
+    input.addEventListener('blur', () => { if (!cancelled) commit(); else showLabel(); });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter')  { e.preventDefault(); input.blur(); }
+      if (e.key === 'Escape') { e.preventDefault(); cancelled = true; input.blur(); }
+    });
+  }
+
+  showLabel();
+  cell.addEventListener('click', activateInput);
+  return cell;
 }
 
 // ─── GANTT ───
@@ -1182,11 +1403,12 @@ function renderGanttHeader(range, totalW, pxDay) {
   let html = '';
   const rowH = headerH / 2;
 
-  // Colors
-  const bg1 = '#1C2128'; const bg2 = '#161B22';
-  const textCol = '#8B949E'; const textBold = '#E6EDF3';
-  const borderCol = '#30363D';
-  const accent = '#58A6FF';
+  // Colors — theme-aware
+  const T = THEMES[currentTheme];
+  const bg1 = T.surface2; const bg2 = T.surface;
+  const textCol = T.text2; const textBold = T.text;
+  const borderCol = T.border;
+  const accent = T.accent;
 
   // Background
   html += `<rect width="${totalW}" height="${headerH}" fill="${bg1}"/>`;
@@ -1254,6 +1476,46 @@ function renderGanttHeader(range, totalW, pxDay) {
       }
     }
 
+  } else if (currentZoom === 'years') {
+    // Top: years — one block per year
+    let curYear = -1, yearStartX = 0;
+    for (let i = 0; i <= totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      const y = d.getFullYear();
+      if (y !== curYear || i === totalDays) {
+        if (curYear !== -1) {
+          const w = i * pxDay - yearStartX;
+          html += `<text x="${yearStartX + w/2}" y="${rowH/2 + 5}" text-anchor="middle" font-family="Outfit,sans-serif" font-size="12" font-weight="700" fill="${textBold}">${curYear}</text>`;
+          html += `<line x1="${i * pxDay}" y1="0" x2="${i * pxDay}" y2="${rowH}" stroke="${borderCol}" stroke-width="1.5"/>`;
+        }
+        curYear = y; yearStartX = i * pxDay;
+      }
+    }
+    // Bottom: quarters T1–T4
+    const QUARTERS = ['T1','T2','T3','T4'];
+    const QUARTER_MONTHS = [0, 3, 6, 9]; // Jan, Apr, Jul, Oct
+    let prevQ = -1;
+    for (let i = 0; i < totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      const q = Math.floor(d.getMonth() / 3);
+      const x = i * pxDay;
+      if (q !== prevQ) {
+        html += `<line x1="${x}" y1="${rowH}" x2="${x}" y2="${headerH}" stroke="${borderCol}" stroke-width="1"/>`;
+        // Find width of this quarter to center the label
+        let qEnd = i;
+        while (qEnd < totalDays) {
+          const dd = parseDate(addDays(range.start, qEnd));
+          if (Math.floor(dd.getMonth() / 3) !== q || dd.getFullYear() !== d.getFullYear()) break;
+          qEnd++;
+        }
+        const qW = (qEnd - i) * pxDay;
+        if (qW > 18) {
+          html += `<text x="${x + qW/2}" y="${rowH + rowH/2 + 5}" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" font-weight="500" fill="${accent}">${QUARTERS[q]}</text>`;
+        }
+        prevQ = q;
+      }
+    }
+
   } else { // months
     // Top: years
     let curYear = -1, yearStart = 0;
@@ -1316,7 +1578,23 @@ function renderGridLines(canvas, range, totalW, totalH, pxDay) {
         canvas.appendChild(line);
       }
     }
+  } else if (currentZoom === 'years') {
+    // One grid line per quarter start
+    let prevQ = -1, prevYear = -1;
+    for (let i = 0; i < totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      const q = Math.floor(d.getMonth() / 3);
+      const y = d.getFullYear();
+      if (q !== prevQ || y !== prevYear) {
+        const line = document.createElement('div');
+        line.className = 'grid-line';
+        line.style.cssText = `left:${i * pxDay}px;height:${totalH}px;opacity:${q === 0 ? '0.7' : '0.35'};`;
+        canvas.appendChild(line);
+        prevQ = q; prevYear = y;
+      }
+    }
   } else {
+    // months: one line per month start
     for (let i = 0; i < totalDays; i++) {
       const d = parseDate(addDays(range.start, i));
       if (d.getDate() === 1) {
@@ -1503,13 +1781,8 @@ function openModal(forcedType, editId = null, parentId = null) {
     document.getElementById('f-end').value = task.endDate;
     const type = getTaskType(task);
     titleEl.textContent = type === 'milestone' ? 'Modifier le jalon' : type === 'summary' ? 'Modifier la tâche récapitulative' : 'Modifier la tâche';
-    if (task.type === 'summary') {
-      document.getElementById('f-start').disabled = task.parentId === null && getChildren(task.id).length > 0;
-      document.getElementById('f-end').disabled = task.parentId === null && getChildren(task.id).length > 0;
-    } else {
-      document.getElementById('f-start').disabled = false;
-      document.getElementById('f-end').disabled = false;
-    }
+    document.getElementById('f-start').disabled = false;
+    document.getElementById('f-end').disabled = false;
   } else {
     const t = today();
     document.getElementById('f-name').value = '';
@@ -1670,11 +1943,104 @@ function fitToView() {
   const totalW = dateDiff(range.start, range.end) * pxDay;
   const scale = ganttBody.offsetWidth / totalW;
   // pick zoom that fits
-  if (scale < 0.3) setZoom('months');
-  else if (scale < 0.7) setZoom('weeks');
-  else setZoom('days');
+  const projectDays = dateDiff(range.start, range.end);
+  const ganttW2 = ganttBody.offsetWidth;
+  if (projectDays * ZOOM_CONFIG.years <= ganttW2 * 1.5) setZoom('months');
+  else setZoom('years');
+  // re-evaluate with better granularity
+  const newPxDay = getPxPerDay();
+  if (projectDays * newPxDay < ganttW2 * 0.4) setZoom('days');
+  else if (projectDays * ZOOM_CONFIG.weeks <= ganttW2 * 1.2) setZoom('weeks');
+  else if (projectDays * ZOOM_CONFIG.months <= ganttW2 * 1.2) setZoom('months');
+  else setZoom('years');
   ganttBody.scrollLeft = 0;
   syncGanttHeaderScroll(0);
+}
+
+// ═══════════════════════════════════════════════════
+// ROW DRAG & DROP REORDER
+// ═══════════════════════════════════════════════════
+function startRowDrag(e, taskId) {
+  dragState = { taskId, startY: e.clientY, moved: false };
+  document.addEventListener('mousemove', onRowDragMove);
+  document.addEventListener('mouseup', onRowDragEnd);
+  document.body.style.userSelect = 'none';
+  document.body.style.cursor = 'grabbing';
+
+  // Mark the dragging row
+  const row = document.querySelector(`.task-row[data-id="${taskId}"]`);
+  if (row) row.classList.add('dragging-row');
+}
+
+function onRowDragMove(e) {
+  if (!dragState) return;
+  if (Math.abs(e.clientY - dragState.startY) > 4) dragState.moved = true;
+  if (!dragState.moved) return;
+
+  // Remove all existing indicators
+  document.querySelectorAll('.drop-indicator').forEach(el => el.remove());
+
+  // Find which row we're hovering
+  const rows = [...document.querySelectorAll('.task-row:not(.dragging-row)')];
+  const target = rows.find(r => {
+    const rect = r.getBoundingClientRect();
+    return e.clientY >= rect.top && e.clientY <= rect.bottom;
+  });
+
+  if (target) {
+    const rect = target.getBoundingClientRect();
+    const mid = rect.top + rect.height / 2;
+    const ind = document.createElement('div');
+    ind.className = 'drop-indicator ' + (e.clientY < mid ? 'top' : 'bottom');
+    target.style.position = 'relative';
+    target.appendChild(ind);
+    dragState.targetId = parseInt(target.dataset.id);
+    dragState.position = e.clientY < mid ? 'before' : 'after';
+  } else {
+    dragState.targetId = null;
+    dragState.position = null;
+  }
+}
+
+function onRowDragEnd(e) {
+  document.removeEventListener('mousemove', onRowDragMove);
+  document.removeEventListener('mouseup', onRowDragEnd);
+  document.body.style.userSelect = '';
+  document.body.style.cursor = '';
+  document.querySelectorAll('.drop-indicator').forEach(el => el.remove());
+  document.querySelectorAll('.dragging-row').forEach(el => el.classList.remove('dragging-row'));
+
+  if (dragState && dragState.moved && dragState.targetId != null && dragState.targetId !== dragState.taskId) {
+    applyRowReorder(dragState.taskId, dragState.targetId, dragState.position);
+  }
+  dragState = null;
+}
+
+function applyRowReorder(srcId, tgtId, position) {
+  const src = tasks.find(t => t.id === srcId);
+  const tgt = tasks.find(t => t.id === tgtId);
+  if (!src || !tgt) return;
+
+  // Prevent dropping a summary onto one of its own descendants
+  if (getDescendants(srcId).includes(tgtId)) return;
+
+  // The dragged task adopts the parent of the target
+  src.parentId = tgt.parentId;
+
+  // Get siblings (same parent, same visible level), sorted by order
+  const siblings = tasks
+    .filter(t => t.parentId === tgt.parentId && t.id !== srcId)
+    .sort((a, b) => a.order - b.order);
+
+  // Insert src before or after tgt in the sibling list
+  const tgtIndex = siblings.findIndex(t => t.id === tgtId);
+  const insertAt = position === 'before' ? tgtIndex : tgtIndex + 1;
+  siblings.splice(insertAt, 0, src);
+
+  // Reassign order values
+  siblings.forEach((t, i) => { t.order = i; });
+
+  render();
 }
 
 // ═══════════════════════════════════════════════════
@@ -1721,6 +2087,7 @@ function closeExportModal() {
 
 function exportSVG() {
   closeExportModal();
+  const T = THEMES[currentTheme]; // theme palette for SVG
   const scale = document.querySelector('input[name="svg-scale"]:checked').value;
   const period = document.querySelector('input[name="svg-period"]:checked').value;
 
@@ -1761,56 +2128,130 @@ function exportSVG() {
   </style>
 </defs>
 <!-- Background -->
-<rect width="${totalW}" height="${totalH}" fill="#0D1117"/>
+<rect width="${totalW}" height="${totalH}" fill="${T.bg}"/>
 <!-- List panel background -->
-<rect width="${listW}" height="${totalH}" fill="#161B22"/>
+<rect width="${listW}" height="${totalH}" fill="${T.surface}"/>
 <!-- Border between list and gantt -->
-<line x1="${listW}" y1="0" x2="${listW}" y2="${totalH}" stroke="#30363D" stroke-width="1"/>
+<line x1="${listW}" y1="0" x2="${listW}" y2="${totalH}" stroke="${T.border}" stroke-width="1"/>
 <!-- Header background -->
-<rect width="${totalW}" height="${headerH}" fill="#1C2128"/>
-<line x1="0" y1="${headerH}" x2="${totalW}" y2="${headerH}" stroke="#30363D" stroke-width="1"/>
+<rect width="${totalW}" height="${headerH}" fill="${T.surface2}"/>
+<line x1="0" y1="${headerH}" x2="${totalW}" y2="${headerH}" stroke="${T.border}" stroke-width="1"/>
 
 <!-- Project name -->
-<text x="12" y="${headerH/2 + 5}" font-size="13" font-weight="bold" fill="#E6EDF3">${escSVG(document.getElementById('project-name').value)}</text>
+<text x="12" y="${headerH/2 + 5}" font-size="13" font-weight="bold" fill="${T.text}">${escSVG(document.getElementById('project-name').value)}</text>
 `;
 
-  // Header timeline
+  // Header timeline — mirrors renderGanttHeader exactly for each zoom level
   const rowMid = headerH / 2;
-  svg += `<line x1="${listW}" y1="${rowMid}" x2="${totalW}" y2="${rowMid}" stroke="#30363D" stroke-width="1"/>`;
+  svg += `<line x1="${listW}" y1="${rowMid}" x2="${totalW}" y2="${rowMid}" stroke="${T.border}" stroke-width="1"/>`;
 
-  // Months row
-  let curMonth = -1, monthStartX = listW;
-  for (let i = 0; i <= totalDays; i++) {
-    const d = parseDate(addDays(range.start, i));
-    const m = d.getMonth();
-    if (m !== curMonth || i === totalDays) {
-      if (curMonth !== -1) {
-        const w = i * pxDay - (monthStartX - listW);
-        const cx = monthStartX + w/2;
-        svg += `<text x="${cx}" y="${rowMid/2 + 5}" text-anchor="middle" font-size="10" font-weight="bold" fill="#E6EDF3">${MONTHS_FULL[curMonth]}</text>`;
-        svg += `<line x1="${listW + i * pxDay}" y1="0" x2="${listW + i * pxDay}" y2="${rowMid}" stroke="#30363D" stroke-width="1"/>`;
-      }
-      curMonth = m; monthStartX = listW + i * pxDay;
-    }
-  }
-
-  // Days/weeks row
   if (currentZoom === 'days') {
-    for (let i = 0; i < totalDays; i++) {
+    // Top: months (name + year)
+    let curMonth = -1, monthStartX = listW, curMonthYear = 0;
+    for (let i = 0; i <= totalDays; i++) {
       const d = parseDate(addDays(range.start, i));
-      const x = listW + i * pxDay;
-      svg += `<line x1="${x}" y1="${rowMid}" x2="${x}" y2="${headerH}" stroke="#30363D" stroke-width="0.5"/>`;
-      if (pxDay >= 14) svg += `<text x="${x + pxDay/2}" y="${rowMid + (headerH - rowMid)/2 + 4}" text-anchor="middle" font-size="9" fill="#8B949E">${d.getDate()}</text>`;
+      const m = d.getMonth(); const y = d.getFullYear();
+      if (m !== curMonth || i === totalDays) {
+        if (curMonth !== -1) {
+          const w = i * pxDay - (monthStartX - listW);
+          svg += `<text x="${monthStartX + w/2}" y="${rowMid/2 + 5}" text-anchor="middle" font-size="10" font-weight="bold" fill="${T.text}">${MONTHS_FULL[curMonth]} ${curMonthYear}</text>`;
+          svg += `<line x1="${listW + i * pxDay}" y1="0" x2="${listW + i * pxDay}" y2="${rowMid}" stroke="${T.border}" stroke-width="1"/>`;
+        }
+        curMonth = m; curMonthYear = y; monthStartX = listW + i * pxDay;
+      }
     }
-  } else if (currentZoom === 'weeks') {
-    let prevW = -1;
+    // Bottom: day numbers
     for (let i = 0; i < totalDays; i++) {
       const d = parseDate(addDays(range.start, i));
-      const w = getISOWeek(d);
       const x = listW + i * pxDay;
+      svg += `<line x1="${x}" y1="${rowMid}" x2="${x}" y2="${headerH}" stroke="${T.border}" stroke-width="0.5"/>`;
+      if (pxDay >= 14) svg += `<text x="${x + pxDay/2}" y="${rowMid + (headerH - rowMid)/2 + 4}" text-anchor="middle" font-size="9" fill="${T.text2}">${d.getDate()}</text>`;
+    }
+
+  } else if (currentZoom === 'weeks') {
+    // Top: months (name + year)
+    let curMonth = -1, monthStartX = listW, curMonthYear = 0;
+    for (let i = 0; i <= totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      const m = d.getMonth(); const y = d.getFullYear();
+      if (m !== curMonth || i === totalDays) {
+        if (curMonth !== -1) {
+          const w = i * pxDay - (monthStartX - listW);
+          svg += `<text x="${monthStartX + w/2}" y="${rowMid/2 + 5}" text-anchor="middle" font-size="10" font-weight="bold" fill="${T.text}">${MONTHS_FULL[curMonth]} ${curMonthYear}</text>`;
+          svg += `<line x1="${listW + i * pxDay}" y1="0" x2="${listW + i * pxDay}" y2="${rowMid}" stroke="${T.border}" stroke-width="1"/>`;
+        }
+        curMonth = m; curMonthYear = y; monthStartX = listW + i * pxDay;
+      }
+    }
+    // Bottom: ISO week numbers
+    for (let i = 0; i < totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
       if (d.getDay() === 1) {
-        svg += `<line x1="${x}" y1="${rowMid}" x2="${x}" y2="${headerH}" stroke="#30363D" stroke-width="1"/>`;
-        svg += `<text x="${x + 2}" y="${rowMid + (headerH - rowMid)/2 + 4}" font-size="9" fill="#8B949E">S${w}</text>`;
+        const x = listW + i * pxDay;
+        svg += `<line x1="${x}" y1="${rowMid}" x2="${x}" y2="${headerH}" stroke="${T.border}" stroke-width="1"/>`;
+        svg += `<text x="${x + 2}" y="${rowMid + (headerH - rowMid)/2 + 4}" font-size="9" fill="${T.text2}">S${getISOWeek(d)}</text>`;
+      }
+    }
+
+  } else if (currentZoom === 'months') {
+    // Top: years
+    let curYear = -1, yearStartX = listW;
+    for (let i = 0; i <= totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      const y = d.getFullYear();
+      if (y !== curYear || i === totalDays) {
+        if (curYear !== -1) {
+          const w = i * pxDay - (yearStartX - listW);
+          svg += `<text x="${yearStartX + w/2}" y="${rowMid/2 + 5}" text-anchor="middle" font-size="11" font-weight="bold" fill="${T.text}">${curYear}</text>`;
+          svg += `<line x1="${listW + i * pxDay}" y1="0" x2="${listW + i * pxDay}" y2="${rowMid}" stroke="${T.border}" stroke-width="1"/>`;
+        }
+        curYear = y; yearStartX = listW + i * pxDay;
+      }
+    }
+    // Bottom: month abbreviations
+    let curMonth2 = -1, monthStartX2 = listW;
+    for (let i = 0; i <= totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      const m = d.getMonth();
+      if (m !== curMonth2 || i === totalDays) {
+        if (curMonth2 !== -1) {
+          const w = i * pxDay - (monthStartX2 - listW);
+          svg += `<text x="${monthStartX2 + w/2}" y="${rowMid + (headerH - rowMid)/2 + 4}" text-anchor="middle" font-size="9" fill="${T.text2}">${MONTHS_FR[curMonth2]}</text>`;
+          svg += `<line x1="${listW + i * pxDay}" y1="${rowMid}" x2="${listW + i * pxDay}" y2="${headerH}" stroke="${T.border}" stroke-width="1"/>`;
+        }
+        curMonth2 = m; monthStartX2 = listW + i * pxDay;
+      }
+    }
+
+  } else { // years
+    // Top: years
+    let curYear = -1, yearStartX = listW;
+    for (let i = 0; i <= totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      const y = d.getFullYear();
+      if (y !== curYear || i === totalDays) {
+        if (curYear !== -1) {
+          const w = i * pxDay - (yearStartX - listW);
+          svg += `<text x="${yearStartX + w/2}" y="${rowMid/2 + 5}" text-anchor="middle" font-size="12" font-weight="bold" fill="${T.text}">${curYear}</text>`;
+          svg += `<line x1="${listW + i * pxDay}" y1="0" x2="${listW + i * pxDay}" y2="${rowMid}" stroke="${T.border}" stroke-width="1.5"/>`;
+        }
+        curYear = y; yearStartX = listW + i * pxDay;
+      }
+    }
+    // Bottom: quarters T1–T4
+    const QUARTERS = ['T1','T2','T3','T4'];
+    let prevQ = -1, prevYr = -1, qStartX = listW;
+    for (let i = 0; i <= totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      const q = Math.floor(d.getMonth() / 3);
+      const y = d.getFullYear();
+      if (q !== prevQ || y !== prevYr || i === totalDays) {
+        if (prevQ !== -1) {
+          const w = listW + i * pxDay - qStartX;
+          if (w > 16) svg += `<text x="${qStartX + w/2}" y="${rowMid + (headerH - rowMid)/2 + 4}" text-anchor="middle" font-size="10" font-weight="500" fill="${T.accent}">${QUARTERS[prevQ]}</text>`;
+          svg += `<line x1="${listW + i * pxDay}" y1="${rowMid}" x2="${listW + i * pxDay}" y2="${headerH}" stroke="${T.border}" stroke-width="1"/>`;
+        }
+        prevQ = q; prevYr = y; qStartX = listW + i * pxDay;
       }
     }
   }
@@ -1821,9 +2262,9 @@ function exportSVG() {
     const type = getTaskType(task);
 
     // Row background
-    const rowFill = type === 'summary' ? '#1A1A2E' : i % 2 === 0 ? '#0D1117' : '#111820';
+    const rowFill = type === 'summary' ? T.rowSum : i % 2 === 0 ? T.rowEven : T.rowOdd;
     svg += `<rect x="0" y="${y}" width="${totalW}" height="${rowH}" fill="${rowFill}"/>`;
-    svg += `<line x1="0" y1="${y + rowH}" x2="${totalW}" y2="${y + rowH}" stroke="#30363D" stroke-width="0.5"/>`;
+    svg += `<line x1="0" y1="${y + rowH}" x2="${totalW}" y2="${y + rowH}" stroke="${T.border}" stroke-width="0.5"/>`;
 
     // List: task name with indentation
     const indent = 8 + level * 16;
@@ -1839,7 +2280,7 @@ function exportSVG() {
       svg += `<rect x="${indent}" y="${y + rowH/2 - 4}" width="10" height="8" rx="1.5" fill="#58A6FF" opacity="0.7"/>`;
     }
 
-    const textColor = type === 'summary' ? '#BC8CFF' : type === 'milestone' ? '#F0A500' : '#E6EDF3';
+    const textColor = type === 'summary' ? (currentTheme==='dark'?'#BC8CFF':'#8250DF') : type === 'milestone' ? (currentTheme==='dark'?'#F0A500':'#BF8700') : T.text;
     const fontW = type === 'summary' ? 'bold' : 'normal';
     const nameX = indent + 14;
     const maxNameW = listW - nameX - 8;
@@ -1852,7 +2293,19 @@ function exportSVG() {
       for (let j = 0; j < totalDays; j++) {
         const d = parseDate(addDays(range.start, j));
         if (d.getDay() === 1) {
-          svg += `<line x1="${listW + j * pxDay}" y1="${y}" x2="${listW + j * pxDay}" y2="${y + rowH}" stroke="#30363D" stroke-width="0.5"/>`;
+          svg += `<line x1="${listW + j * pxDay}" y1="${y}" x2="${listW + j * pxDay}" y2="${y + rowH}" stroke="${T.border}" stroke-width="0.5"/>`;
+        }
+      }
+    } else if (currentZoom === 'years') {
+      let prevQ = -1, prevYr = -1;
+      for (let j = 0; j < totalDays; j++) {
+        const d = parseDate(addDays(range.start, j));
+        const q = Math.floor(d.getMonth() / 3);
+        const yr = d.getFullYear();
+        if (q !== prevQ || yr !== prevYr) {
+          const op = q === 0 ? '0.6' : '0.25';
+          svg += `<line x1="${listW + j * pxDay}" y1="${y}" x2="${listW + j * pxDay}" y2="${y + rowH}" stroke="${T.border}" stroke-width="0.8" opacity="${op}"/>`;
+          prevQ = q; prevYr = yr;
         }
       }
     }
@@ -1898,17 +2351,17 @@ function exportSVG() {
 
   // Legend
   const legendY = totalH - 36;
-  svg += `<rect x="0" y="${legendY}" width="${totalW}" height="36" fill="#161B22"/>`;
-  svg += `<line x1="0" y1="${legendY}" x2="${totalW}" y2="${legendY}" stroke="#30363D" stroke-width="1"/>`;
+  svg += `<rect x="0" y="${legendY}" width="${totalW}" height="36" fill="${T.legendBg}"/>`;
+  svg += `<line x1="0" y1="${legendY}" x2="${totalW}" y2="${legendY}" stroke="${T.border}" stroke-width="1"/>`;
   svg += `<rect x="12" y="${legendY + 12}" width="20" height="10" rx="2" fill="#3B82F6"/>`;
-  svg += `<text x="38" y="${legendY + 21}" font-size="10" fill="#8B949E">Tâche standard</text>`;
-  svg += `<rect x="140" y="${legendY + 10}" width="12" height="12" fill="#8B5CF6" transform="rotate(0 146 ${legendY + 16})"/>`;
-  svg += `<text x="160" y="${legendY + 21}" font-size="10" fill="#8B949E">Tâche récapitulative</text>`;
+  svg += `<text x="38" y="${legendY + 21}" font-size="10" fill="${T.text2}">Tâche standard</text>`;
+  svg += `<rect x="140" y="${legendY + 10}" width="12" height="12" fill="${currentTheme==='dark'?'#8B5CF6':'#8250DF'}" transform="rotate(0 146 ${legendY + 16})"/>`;
+  svg += `<text x="160" y="${legendY + 21}" font-size="10" fill="${T.text2}">Tâche récapitulative</text>`;
   const mx = 300, my = legendY + 16;
   svg += `<rect x="${mx - 6}" y="${my - 6}" width="12" height="12" fill="#F0A500" transform="rotate(45 ${mx} ${my})"/>`;
-  svg += `<text x="${mx + 10}" y="${legendY + 21}" font-size="10" fill="#8B949E">Jalon</text>`;
-  svg += `<line x1="${mx + 55}" y1="${legendY + 10}" x2="${mx + 55}" y2="${legendY + 26}" stroke="#FF6B6B" stroke-width="1.5" stroke-dasharray="3,2"/>`;
-  svg += `<text x="${mx + 62}" y="${legendY + 21}" font-size="10" fill="#8B949E">Aujourd'hui</text>`;
+  svg += `<text x="${mx + 10}" y="${legendY + 21}" font-size="10" fill="${T.text2}">Jalon</text>`;
+  svg += `<line x1="${mx + 55}" y1="${legendY + 10}" x2="${mx + 55}" y2="${legendY + 26}" stroke="${T.today}" stroke-width="1.5" stroke-dasharray="3,2"/>`;
+  svg += `<text x="${mx + 62}" y="${legendY + 21}" font-size="10" fill="${T.text2}">Aujourd'hui</text>`;
 
   svg += `\n</svg>`;
 
