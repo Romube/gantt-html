@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gantt Chart</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f5f6fa;
+      color: #333;
+      padding: 24px;
+    }
+
+    h1 { font-size: 1.4rem; margin-bottom: 20px; }
+
+    #gantt-container {
+      background: #fff;
+      border: 1px solid #dde1ea;
+      border-radius: 8px;
+      overflow: auto;
+    }
+
+    #gantt-table {
+      border-collapse: collapse;
+      min-width: 100%;
+      font-size: 0.85rem;
+    }
+
+    /* Header row */
+    #gantt-table thead th {
+      background: #f0f2f8;
+      border-bottom: 1px solid #dde1ea;
+      padding: 8px 12px;
+      white-space: nowrap;
+      font-weight: 600;
+      text-align: left;
+    }
+
+    #gantt-table thead th.date-col {
+      text-align: center;
+      font-weight: 500;
+      color: #666;
+      min-width: 28px;
+      padding: 8px 4px;
+    }
+
+    /* Task rows */
+    #gantt-table tbody tr:nth-child(even) { background: #fafbfd; }
+    #gantt-table tbody tr:hover { background: #eef1fb; }
+
+    #gantt-table tbody td {
+      border-bottom: 1px solid #eee;
+      padding: 6px 12px;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+
+    #gantt-table tbody td.date-cell {
+      padding: 6px 2px;
+      text-align: center;
+    }
+
+    /* Gantt bar */
+    .gantt-bar {
+      display: block;
+      height: 18px;
+      border-radius: 4px;
+      background: #4c6ef5;
+      opacity: 0.85;
+      position: relative;
+    }
+
+    .gantt-bar.category-design  { background: #7950f2; }
+    .gantt-bar.category-dev     { background: #1c7ed6; }
+    .gantt-bar.category-testing { background: #2f9e44; }
+    .gantt-bar.category-deploy  { background: #f76707; }
+
+    /* Today marker column highlight */
+    .today-col {
+      background: rgba(255, 220, 100, 0.25) !important;
+    }
+
+    .today-header {
+      background: #ffe066 !important;
+      color: #555 !important;
+      font-weight: 700 !important;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Project Gantt Chart</h1>
+<div id="gantt-container">
+  <table id="gantt-table">
+    <thead id="gantt-head"></thead>
+    <tbody id="gantt-body"></tbody>
+  </table>
+</div>
+
+<script>
+  // ---------------------------------------------------------------------------
+  // Data
+  // ---------------------------------------------------------------------------
+  const tasks = [
+    { name: "Requirements gathering", start: "2026-03-01", end: "2026-03-07", category: "design" },
+    { name: "UI/UX mockups",          start: "2026-03-05", end: "2026-03-14", category: "design" },
+    { name: "Database schema",        start: "2026-03-08", end: "2026-03-13", category: "dev"     },
+    { name: "Backend API",            start: "2026-03-10", end: "2026-03-25", category: "dev"     },
+    { name: "Frontend components",    start: "2026-03-15", end: "2026-03-30", category: "dev"     },
+    { name: "Integration testing",    start: "2026-03-26", end: "2026-04-05", category: "testing" },
+    { name: "User acceptance tests",  start: "2026-04-03", end: "2026-04-10", category: "testing" },
+    { name: "Staging deployment",     start: "2026-04-08", end: "2026-04-11", category: "deploy"  },
+    { name: "Production release",     start: "2026-04-12", end: "2026-04-14", category: "deploy"  },
+  ];
+
+  // ---------------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------------
+
+  /** Parse "YYYY-MM-DD" to a Date (midnight UTC). */
+  function parseDate(str) {
+    const [y, m, d] = str.split("-").map(Number);
+    return new Date(Date.UTC(y, m - 1, d));
+  }
+
+  /** Format a Date as "MMM D" (e.g. "Mar 5"). */
+  function fmtShort(date) {
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+  }
+
+  /** Add `n` days to a Date (returns new Date). */
+  function addDays(date, n) {
+    return new Date(date.getTime() + n * 86400000);
+  }
+
+  /** Return the number of whole days between two dates. */
+  function daysBetween(a, b) {
+    return Math.round((b - a) / 86400000);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Build date range covering all tasks
+  // ---------------------------------------------------------------------------
+  const allStarts = tasks.map(t => parseDate(t.start));
+  const allEnds   = tasks.map(t => parseDate(t.end));
+  const minDate   = new Date(Math.min(...allStarts));
+  const maxDate   = new Date(Math.max(...allEnds));
+  const totalDays = daysBetween(minDate, maxDate) + 1;
+
+  const today = new Date(Date.UTC(
+    new Date().getUTCFullYear(),
+    new Date().getUTCMonth(),
+    new Date().getUTCDate()
+  ));
+
+  // ---------------------------------------------------------------------------
+  // Render header
+  // ---------------------------------------------------------------------------
+  function renderHeader() {
+    const tr = document.createElement("tr");
+
+    const th = document.createElement("th");
+    th.textContent = "Task";
+    th.style.minWidth = "200px";
+    tr.appendChild(th);
+
+    for (let i = 0; i < totalDays; i++) {
+      const d = addDays(minDate, i);
+      const cell = document.createElement("th");
+      cell.className = "date-col";
+      cell.textContent = fmtShort(d);
+
+      // TODO: Add tooltip to date header cells showing the full date (e.g. "Monday, March 31 2026")
+
+      if (daysBetween(d, today) === 0) {
+        cell.classList.add("today-header");
+      }
+
+      tr.appendChild(cell);
+    }
+
+    document.getElementById("gantt-head").appendChild(tr);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Render task rows
+  // ---------------------------------------------------------------------------
+  function renderRows() {
+    const tbody = document.getElementById("gantt-body");
+
+    const sorted = [...tasks].sort((a, b) => parseDate(a.start) - parseDate(b.start));
+
+    sorted.forEach(task => {
+      const tr = document.createElement("tr");
+
+      // Task name cell
+      const nameCell = document.createElement("td");
+      nameCell.textContent = task.name;
+      tr.appendChild(nameCell);
+
+      const taskStart = parseDate(task.start);
+      const taskEnd   = parseDate(task.end);
+      const spanDays  = daysBetween(taskStart, taskEnd) + 1;
+
+      for (let i = 0; i < totalDays; i++) {
+        const d       = addDays(minDate, i);
+        const cell    = document.createElement("td");
+        cell.className = "date-cell";
+
+        if (daysBetween(d, today) === 0) {
+          cell.classList.add("today-col");
+        }
+
+        const offsetFromTaskStart = daysBetween(taskStart, d);
+
+        if (offsetFromTaskStart === 0) {
+          // First day of the task: render the bar spanning all days
+          const bar = document.createElement("span");
+          bar.className = `gantt-bar category-${task.category}`;
+          bar.style.width = `calc(${spanDays} * (28px))`;
+          bar.style.position = "absolute";
+          cell.style.position = "relative";
+          cell.style.overflow = "visible";
+          cell.appendChild(bar);
+        }
+
+        tr.appendChild(cell);
+      }
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // Init
+  // ---------------------------------------------------------------------------
+  renderHeader();
+  renderRows();
+</script>
+</body>
+</html>
