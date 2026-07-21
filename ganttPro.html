@@ -1099,6 +1099,14 @@ function getChildren(parentId) {
   return tasks.filter(t => t.parentId === parentId);
 }
 
+// Rétrograde une tâche récapitulative en tâche normale si elle n'a plus d'enfants
+function demoteIfEmptySummary(taskId) {
+  if (taskId === null) return;
+  const task = tasks.find(t => t.id === taskId);
+  if (!task || task.type !== 'summary') return;
+  if (getChildren(taskId).length === 0) task.type = 'standard';
+}
+
 function getDescendants(id) {
   const result = [];
   const q = [id];
@@ -2045,6 +2053,11 @@ function saveTask() {
       order: maxOrder + 1,
       collapsed: false
     });
+    // Le parent devient automatiquement récapitulatif s'il ne l'est pas déjà
+    if (editingParentId !== null) {
+      const parent = tasks.find(t => t.id === editingParentId);
+      if (parent && parent.type !== 'summary') parent.type = 'summary';
+    }
   }
 
   closeModal();
@@ -2096,6 +2109,7 @@ function deleteTask(id, promoteChildren) {
   }
   tasks = tasks.filter(t => t.id !== id);
   if (selectedTaskId === id) selectedTaskId = null;
+  demoteIfEmptySummary(task.parentId);
   render();
 }
 
@@ -2224,6 +2238,8 @@ function applyRowReorder(srcId, tgtId, position) {
   if (getDescendants(srcId).includes(tgtId)) return;
   if (srcId === tgtId) return;
 
+  const oldParentId = src.parentId;
+
   if (position === 'into') {
     // ── Nesting : la tâche devient enfant de la cible ──
     // La cible devient automatiquement récapitulative si elle ne l'est pas
@@ -2246,6 +2262,7 @@ function applyRowReorder(srcId, tgtId, position) {
     siblings.forEach((t, i) => { t.order = i; });
   }
 
+  demoteIfEmptySummary(oldParentId);
   render();
 }
 
@@ -2313,10 +2330,12 @@ function applyNest(srcId, newParentId) {
     newParent.collapsed = false;
   }
 
+  const oldParentId = src.parentId;
   src.parentId = newParentId;
   // Placer en dernière position dans le nouveau groupe
   const siblings = tasks.filter(t => t.parentId === newParentId && t.id !== srcId);
   src.order = siblings.length;
+  demoteIfEmptySummary(oldParentId);
   render();
 }
 
