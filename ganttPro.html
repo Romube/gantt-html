@@ -50,6 +50,7 @@
     --summary-dim: #FBEFFF;
     --today: #CF222E;
   }
+  /* Theme toggle button */
   #theme-toggle {
     display: flex; align-items: center; gap: 6px;
     padding: 5px 10px;
@@ -123,7 +124,6 @@
   .tb-btn:hover { background: var(--surface3); color: var(--text); border-color: var(--border); }
   .tb-btn.primary { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
   .tb-btn.primary:hover { background: var(--accent); color: #fff; }
-  .tb-btn:disabled { opacity: .35; cursor: default; pointer-events: none; }
   .tb-btn svg { flex-shrink: 0; }
   .zoom-group { display: flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
   .zoom-btn {
@@ -170,7 +170,6 @@
     align-items: center;
     padding: 0 8px;
     flex-shrink: 0;
-    gap: 0;
   }
   .lh-cell {
     font-size: 11px;
@@ -224,6 +223,7 @@
     white-space: nowrap;
     margin-left: 4px;
   }
+  mark { background: var(--accent-dim); color: var(--accent); border-radius: 2px; padding: 0 1px; }
   #task-list-body {
     flex: 1;
     overflow-y: auto;
@@ -245,7 +245,7 @@
     position: relative;
   }
   .task-row:hover { background: var(--surface2); }
-  .task-row.selected { background: var(--accent-dim); outline: 1px solid var(--accent); outline-offset: -1px; }
+  .task-row.selected { background: var(--accent-dim); }
   .task-row.summary-row { background: rgba(188,140,255,.04); }
   .task-row.summary-row:hover { background: rgba(188,140,255,.09); }
 
@@ -280,7 +280,6 @@
   }
   .task-label.summary { font-weight: 600; color: var(--summary); }
   .task-label.milestone { color: var(--milestone); }
-  mark { background: var(--accent-dim); color: var(--accent); border-radius: 2px; padding: 0 1px; }
 
   .task-date {
     font-family: 'JetBrains Mono', monospace;
@@ -292,8 +291,15 @@
     transition: background .1s, color .1s;
     position: relative;
   }
-  .task-date:hover { background: var(--surface3); color: var(--text); }
-  .task-date.editing { padding: 0; background: transparent; cursor: default; }
+  .task-date:hover {
+    background: var(--surface3);
+    color: var(--text);
+  }
+  .task-date.editing {
+    padding: 0;
+    background: transparent;
+    cursor: default;
+  }
   .inline-date-input {
     width: 100%;
     height: 100%;
@@ -308,7 +314,9 @@
     box-shadow: 0 0 0 3px rgba(88,166,255,.15);
     color-scheme: dark;
   }
-  body.light .inline-date-input { color-scheme: light; }
+  body.light .inline-date-input {
+    color-scheme: light;
+  }
   .task-actions {
     display: flex;
     align-items: center;
@@ -334,6 +342,7 @@
   .task-row:hover .drag-grip { opacity: 1; }
   .drag-grip:active { cursor: grabbing; }
 
+  /* Drop indicator */
   .drop-indicator {
     position: absolute;
     left: 0; right: 0;
@@ -346,8 +355,31 @@
   }
   .drop-indicator.top { top: -1px; }
   .drop-indicator.bottom { bottom: -1px; }
-  .task-row.dragging-row { opacity: .4; background: var(--accent-dim) !important; }
 
+  /* Drop INTO indicator (nesting) */
+  .task-row.drop-into {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+    background: var(--accent-dim) !important;
+    border-radius: 4px;
+  }
+  .task-row.drop-into::after {
+    content: '↳ Nester ici';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--accent);
+    pointer-events: none;
+  }
+
+  /* Row being dragged */
+  .task-row.dragging-row {
+    opacity: .4;
+    background: var(--accent-dim) !important;
+  }
   .act-btn {
     width: 20px; height: 20px;
     display: flex; align-items: center; justify-content: center;
@@ -374,7 +406,12 @@
   #splitter:hover, #splitter.dragging { background: var(--accent); }
 
   /* ─── RIGHT PANEL ─── */
-  #right-panel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  #right-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
   #gantt-header {
     height: var(--header-h);
     background: var(--surface2);
@@ -383,14 +420,25 @@
     flex-shrink: 0;
     position: relative;
   }
-  #gantt-header-svg { position: absolute; top: 0; left: 0; pointer-events: none; }
-  #gantt-body { flex: 1; overflow: auto; position: relative; }
+  #gantt-header-svg {
+    position: absolute;
+    top: 0; left: 0;
+    pointer-events: none;
+  }
+  #gantt-body {
+    flex: 1;
+    overflow: auto;
+    position: relative;
+  }
   #gantt-body::-webkit-scrollbar { width: 6px; height: 6px; }
   #gantt-body::-webkit-scrollbar-track { background: transparent; }
   #gantt-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-  #gantt-canvas { position: relative; }
+  #gantt-canvas {
+    position: relative;
+  }
   .gantt-row-bg {
-    position: absolute; left: 0; right: 0;
+    position: absolute;
+    left: 0; right: 0;
     height: var(--row-h);
     border-bottom: 1px solid var(--border);
   }
@@ -398,27 +446,41 @@
   .gantt-row-bg.odd { background: rgba(255,255,255,.015); }
   .gantt-row-bg.summary { background: rgba(188,140,255,.03); }
   .grid-line {
-    position: absolute; top: 0; width: 1px;
-    background: var(--border); opacity: .5;
+    position: absolute;
+    top: 0;
+    width: 1px;
+    background: var(--border);
+    opacity: .5;
     pointer-events: none;
   }
   .today-line {
-    position: absolute; top: 0; width: 2px;
-    background: var(--today); opacity: .7;
-    pointer-events: none; z-index: 5;
+    position: absolute;
+    top: 0;
+    width: 2px;
+    background: var(--today);
+    opacity: .7;
+    pointer-events: none;
+    z-index: 5;
   }
   .today-line::after {
     content: 'Aujourd\'hui';
-    position: absolute; top: 2px; left: 4px;
-    font-size: 10px; color: var(--today);
+    position: absolute;
+    top: 2px;
+    left: 4px;
+    font-size: 10px;
+    color: var(--today);
     font-family: 'Outfit', sans-serif;
-    font-weight: 600; white-space: nowrap;
+    font-weight: 600;
+    white-space: nowrap;
   }
 
   /* ─── GANTT BARS ─── */
   .gantt-bar-wrapper {
-    position: absolute; display: flex; align-items: center;
-    cursor: pointer; z-index: 3;
+    position: absolute;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    z-index: 3;
   }
   .gantt-bar {
     height: var(--bar-h);
@@ -428,93 +490,102 @@
     min-width: 4px;
     transition: filter .1s;
   }
-  .gantt-bar:hover { filter: brightness(1.15); }
+  .gantt-bar:hover { filter: brightness(1.2); }
   .gantt-bar.standard { background: linear-gradient(135deg, #3B82F6, #2563EB); border: 1px solid #60A5FA44; }
   .gantt-bar.summary-bar {
-    border-radius: 3px; height: 18px;
+    border-radius: 3px;
+    height: 18px;
     background: linear-gradient(135deg, #8B5CF6, #6D28D9);
     border: 1px solid #A78BFA44;
   }
-  /* ─── PROGRESS BAR ─── */
-  .progress-fill {
-    position: absolute;
-    left: 0; top: 0; height: 100%;
-    background: rgba(255,255,255,.22);
-    pointer-events: none;
-    border-radius: 4px 0 0 4px;
-    transition: width .3s ease;
-  }
   .gantt-bar .bar-label {
-    position: absolute; inset: 0;
-    display: flex; align-items: center;
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
     padding: 0 6px;
-    font-size: 11px; font-weight: 500;
+    font-size: 11px;
+    font-weight: 500;
     color: rgba(255,255,255,.9);
-    overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     pointer-events: none;
-    z-index: 1;
   }
   .bar-label-outside {
-    position: absolute; left: calc(100% + 6px);
-    font-size: 11px; color: var(--text2);
-    white-space: nowrap; pointer-events: none;
+    position: absolute;
+    left: calc(100% + 6px);
+    font-size: 11px;
+    color: var(--text2);
+    white-space: nowrap;
+    pointer-events: none;
   }
   .milestone-diamond {
-    position: absolute; width: 14px; height: 14px;
+    position: absolute;
+    width: 14px; height: 14px;
     background: var(--milestone);
     border: 2px solid #FBBF2488;
     transform: rotate(45deg);
-    cursor: pointer; z-index: 4;
+    cursor: pointer;
+    z-index: 4;
     transition: filter .1s, transform .1s;
     box-shadow: 0 0 8px rgba(240,165,0,.4);
   }
   .milestone-diamond:hover { filter: brightness(1.3); transform: rotate(45deg) scale(1.15); }
   .milestone-label {
-    position: absolute; font-size: 11px;
-    color: var(--milestone); white-space: nowrap;
-    font-weight: 500; pointer-events: none;
+    position: absolute;
+    font-size: 11px;
+    color: var(--milestone);
+    white-space: nowrap;
+    font-weight: 500;
+    pointer-events: none;
   }
+  /* Summary caps */
   .summary-cap-left, .summary-cap-right {
-    position: absolute; bottom: -4px;
-    width: 0; height: 0; z-index: 2;
+    position: absolute;
+    bottom: -4px;
+    width: 0; height: 0;
+    z-index: 2;
   }
-  .summary-cap-left { left: 0; border-left: 6px solid transparent; border-right: 0; border-top: 6px solid #8B5CF6; }
-  .summary-cap-right { right: 0; border-left: 0; border-right: 6px solid transparent; border-top: 6px solid #8B5CF6; }
+  .summary-cap-left {
+    left: 0;
+    border-left: 6px solid transparent;
+    border-right: 0px solid transparent;
+    border-top: 6px solid #8B5CF6;
+  }
+  .summary-cap-right {
+    right: 0;
+    border-left: 0px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #8B5CF6;
+  }
+
+  /* Drag handles */
   .drag-handle-left, .drag-handle-right {
-    position: absolute; top: 0; bottom: 0; width: 6px;
-    cursor: ew-resize; z-index: 5; opacity: 0; transition: opacity .15s;
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 6px;
+    cursor: ew-resize;
+    z-index: 5;
+    opacity: 0;
+    transition: opacity .15s;
   }
   .drag-handle-left { left: 0; background: linear-gradient(to right, rgba(255,255,255,.4), transparent); border-radius: 4px 0 0 4px; }
   .drag-handle-right { right: 0; background: linear-gradient(to left, rgba(255,255,255,.4), transparent); border-radius: 0 4px 4px 0; }
   .gantt-bar:hover .drag-handle-left,
   .gantt-bar:hover .drag-handle-right { opacity: 1; }
 
-  /* ─── DRAG DATE TOOLTIP ─── */
-  #drag-date-tip {
-    position: fixed;
-    background: var(--surface2);
-    border: 1px solid var(--accent);
-    border-radius: 6px;
-    padding: 4px 8px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
-    color: var(--accent);
-    pointer-events: none;
-    z-index: 1001;
-    display: none;
-    white-space: nowrap;
-    box-shadow: 0 4px 12px rgba(0,0,0,.4);
-  }
-  #drag-date-tip.visible { display: block; }
-
   /* ─── STATUS BAR ─── */
   #statusbar {
     height: 26px;
     background: var(--surface);
     border-top: 1px solid var(--border);
-    display: flex; align-items: center;
-    padding: 0 16px; gap: 24px;
-    font-size: 11px; color: var(--text3);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 24px;
+    font-size: 11px;
+    color: var(--text3);
     flex-shrink: 0;
   }
   .sb-item span { color: var(--text2); font-weight: 500; }
@@ -525,14 +596,18 @@
     background: rgba(0,0,0,.65);
     backdrop-filter: blur(4px);
     z-index: 100;
-    display: none; align-items: center; justify-content: center;
+    display: none;
+    align-items: center;
+    justify-content: center;
   }
   #modal-overlay.open { display: flex; }
   #modal {
     background: var(--surface);
     border: 1px solid var(--border2);
     border-radius: 12px;
-    width: 520px; max-width: 95vw; max-height: 90vh;
+    width: 520px;
+    max-width: 95vw;
+    max-height: 90vh;
     overflow-y: auto;
     box-shadow: 0 24px 64px rgba(0,0,0,.6);
     animation: modal-in .2s cubic-bezier(.34,1.56,.64,1);
@@ -544,29 +619,44 @@
   #modal-header {
     padding: 20px 24px 16px;
     border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
   #modal-title { font-size: 16px; font-weight: 600; }
   #modal-close {
     width: 28px; height: 28px;
     display: flex; align-items: center; justify-content: center;
-    border-radius: 6px; border: none;
-    background: transparent; color: var(--text2); cursor: pointer; font-size: 18px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    font-size: 18px;
   }
   #modal-close:hover { background: var(--surface3); color: var(--text); }
   #modal-body { padding: 20px 24px; }
   .form-group { margin-bottom: 16px; }
   .form-label {
-    display: block; font-size: 12px; font-weight: 600;
-    color: var(--text2); text-transform: uppercase;
-    letter-spacing: .06em; margin-bottom: 6px;
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 6px;
   }
   .form-input, .form-textarea, .form-select {
-    width: 100%; padding: 9px 12px;
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: 8px; color: var(--text);
-    font-family: 'Outfit', sans-serif; font-size: 13px;
-    outline: none; transition: border-color .15s;
+    width: 100%;
+    padding: 9px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color .15s;
   }
   .form-input:focus, .form-textarea:focus, .form-select:focus {
     border-color: var(--accent);
@@ -576,33 +666,31 @@
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .form-badge {
     display: inline-flex; align-items: center;
-    padding: 4px 10px; border-radius: 20px;
-    font-size: 11px; font-weight: 600; margin-top: 8px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 8px;
   }
   .badge-standard { background: var(--accent-dim); color: var(--accent); }
   .badge-milestone { background: var(--milestone-dim); color: var(--milestone); }
   .badge-summary { background: var(--summary-dim); color: var(--summary); }
-  /* Progress slider */
-  .progress-row {
-    display: flex; align-items: center; gap: 10px;
-  }
-  .progress-row input[type=range] {
-    flex: 1; accent-color: var(--accent); cursor: pointer;
-  }
-  .progress-val {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 12px; color: var(--accent);
-    min-width: 34px; text-align: right;
-  }
   #modal-footer {
-    padding: 16px 24px; border-top: 1px solid var(--border);
-    display: flex; justify-content: flex-end; gap: 8px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
   }
   .btn {
-    padding: 8px 16px; border-radius: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
     border: 1px solid var(--border);
-    font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 500;
-    cursor: pointer; transition: all .15s;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .15s;
   }
   .btn-ghost { background: transparent; color: var(--text2); }
   .btn-ghost:hover { background: var(--surface3); color: var(--text); }
@@ -614,14 +702,22 @@
   /* ─── CONFIRM DIALOG ─── */
   #confirm-overlay {
     position: fixed; inset: 0;
-    background: rgba(0,0,0,.65); backdrop-filter: blur(4px);
-    z-index: 200; display: none; align-items: center; justify-content: center;
+    background: rgba(0,0,0,.65);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
   }
   #confirm-overlay.open { display: flex; }
   #confirm-box {
-    background: var(--surface); border: 1px solid var(--border2);
-    border-radius: 12px; width: 380px; padding: 24px;
-    box-shadow: 0 24px 64px rgba(0,0,0,.6); animation: modal-in .15s ease;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    width: 380px;
+    padding: 24px;
+    box-shadow: 0 24px 64px rgba(0,0,0,.6);
+    animation: modal-in .15s ease;
   }
   #confirm-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
   #confirm-msg { font-size: 13px; color: var(--text2); margin-bottom: 20px; line-height: 1.6; }
@@ -629,9 +725,13 @@
 
   /* ─── EMPTY STATE ─── */
   #empty-state {
-    display: none; flex-direction: column;
-    align-items: center; justify-content: center;
-    height: 100%; gap: 12px; color: var(--text3);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 12px;
+    color: var(--text3);
   }
   #empty-state svg { opacity: .3; }
   #empty-state p { font-size: 14px; }
@@ -639,10 +739,15 @@
 
   /* ─── EXPORT MODAL ─── */
   .export-option {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 12px; border-radius: 8px;
-    border: 1px solid var(--border); margin-bottom: 8px;
-    cursor: pointer; transition: border-color .15s, background .15s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
   }
   .export-option:hover { border-color: var(--accent); background: var(--accent-dim); }
   .export-option input[type=radio] { accent-color: var(--accent); }
@@ -650,19 +755,31 @@
   /* ─── TOOLTIP ─── */
   #tooltip {
     position: fixed;
-    background: var(--surface2); border: 1px solid var(--border2);
-    border-radius: 8px; padding: 8px 12px;
-    font-size: 12px; color: var(--text);
-    pointer-events: none; z-index: 1000;
-    opacity: 0; transition: opacity .15s;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--text);
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity .15s;
     max-width: 240px;
     box-shadow: 0 8px 24px rgba(0,0,0,.4);
     line-height: 1.6;
   }
   #tooltip.visible { opacity: 1; }
 
+  /* ─── SCROLLBAR SYNC ─── */
+  .scrollbar-spacer { height: 8px; }
+
+  /* ─── DRAG CURSOR ─── */
+  .dragging-bar { cursor: grabbing !important; }
+
   input[type="date"]::-webkit-calendar-picker-indicator {
-    filter: invert(1) opacity(.5); cursor: pointer;
+    filter: invert(1) opacity(.5);
+    cursor: pointer;
   }
   input[type="date"] { color-scheme: dark; }
 </style>
@@ -678,7 +795,7 @@
     <rect x="7" y="11" width="4" height="2" rx="1" fill="#8B5CF6" opacity=".7"/>
     <circle cx="9" cy="5" r="1" fill="#F0A500"/>
   </svg>
-  <input id="project-name" type="text" value="Mon Projet" title="Cliquez pour renommer" aria-label="Nom du projet">
+  <input id="project-name" type="text" value="Mon Projet" title="Cliquez pour renommer">
   <div class="tb-sep"></div>
   <button class="tb-btn primary" onclick="openModal('standard')" title="Ajouter une tâche">
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><line x1="7" y1="2" x2="7" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="2" y1="7" x2="12" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
@@ -707,15 +824,6 @@
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5V2h3M9 2h3v3M12 9v3H9M5 12H2v-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     Ajuster
   </button>
-  <!-- Undo / Redo -->
-  <div class="tb-sep"></div>
-  <button class="tb-btn" id="undo-btn" onclick="undo()" title="Annuler (Ctrl+Z)" disabled>
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 5H9a3 3 0 010 6H5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M2 5L5 2M2 5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-  </button>
-  <button class="tb-btn" id="redo-btn" onclick="redo()" title="Rétablir (Ctrl+Y)" disabled>
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M12 5H5a3 3 0 000 6h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 5L9 2m3 3l-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-  </button>
-  <div class="tb-sep"></div>
   <button id="theme-toggle" onclick="toggleTheme()" title="Basculer thème clair / sombre">
     <svg id="theme-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="3" stroke="currentColor" stroke-width="1.5"/><line x1="7" y1="1" x2="7" y2="2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="7" y1="11.5" x2="7" y2="13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="1" y1="7" x2="2.5" y2="7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="11.5" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="2.93" y1="2.93" x2="4" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="10" y1="10" x2="11.07" y2="11.07" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="11.07" y1="2.93" x2="10" y2="4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="4" y1="10" x2="2.93" y2="11.07" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
     <span id="theme-label">Clair</span>
@@ -733,6 +841,10 @@
     <button class="tb-btn" onclick="exportCSV()" title="Exporter en CSV">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="3" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><line x1="4" y1="3" x2="4" y2="12" stroke="currentColor" stroke-width="1"/><line x1="8" y1="3" x2="8" y2="12" stroke="currentColor" stroke-width="1"/><line x1="1" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="1"/></svg>
       CSV
+    </button>
+    <button class="tb-btn" onclick="exportMarkdown()" title="Exporter en Markdown (tableau + Mermaid Gantt)">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M3 9V5l2 2 2-2v4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 7l-1.5 2M10 7l1.5 2M10 7V5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      MD
     </button>
     <button class="tb-btn" onclick="openExportSVGModal()" title="Exporter en SVG pour LibreOffice">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><circle cx="4" cy="5.5" r="1" fill="currentColor" opacity=".5"/><path d="M1 9l3-3 3 3 3-4 3 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -758,7 +870,7 @@
       <div class="lh-cell" style="text-align:center">Fin</div>
       <div class="lh-cell"></div>
     </div>
-    <div id="task-list-body" tabindex="0" role="listbox" aria-label="Liste des tâches">
+    <div id="task-list-body">
       <div id="empty-state">
         <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
           <rect x="6" y="10" width="36" height="28" rx="4" stroke="#8B949E" stroke-width="2"/>
@@ -795,35 +907,28 @@
 
 <!-- TASK MODAL -->
 <div id="modal-overlay" onclick="if(event.target===this)closeModal()">
-  <div id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div id="modal">
     <div id="modal-header">
       <div id="modal-title">Nouvelle tâche</div>
-      <button id="modal-close" onclick="closeModal()" aria-label="Fermer">✕</button>
+      <button id="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div id="modal-body">
       <div class="form-group">
-        <label class="form-label" for="f-name">Nom de la tâche *</label>
+        <label class="form-label">Nom de la tâche *</label>
         <input class="form-input" id="f-name" type="text" placeholder="Ex: Développement du module auth" maxlength="255">
       </div>
       <div class="form-group">
-        <label class="form-label" for="f-desc">Description</label>
+        <label class="form-label">Description</label>
         <textarea class="form-textarea" id="f-desc" placeholder="Description détaillée, critères d'acceptation…"></textarea>
       </div>
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label" for="f-start">Date de début *</label>
+          <label class="form-label">Date de début *</label>
           <input class="form-input" id="f-start" type="date">
         </div>
         <div class="form-group">
-          <label class="form-label" for="f-end">Date de fin *</label>
+          <label class="form-label">Date de fin *</label>
           <input class="form-input" id="f-end" type="date">
-        </div>
-      </div>
-      <div class="form-group" id="progress-group">
-        <label class="form-label" for="f-progress">Avancement</label>
-        <div class="progress-row">
-          <input type="range" id="f-progress" min="0" max="100" step="5" value="0" oninput="document.getElementById('f-progress-val').textContent=this.value+'%'">
-          <span class="progress-val" id="f-progress-val">0%</span>
         </div>
       </div>
       <div id="type-indicator"></div>
@@ -837,10 +942,10 @@
 
 <!-- EXPORT SVG MODAL -->
 <div id="export-modal-overlay" onclick="if(event.target===this)closeExportModal()" style="position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;">
-  <div id="export-modal" role="dialog" aria-modal="true" aria-label="Options d'export SVG" style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;width:440px;box-shadow:0 24px 64px rgba(0,0,0,.6);animation:modal-in .2s cubic-bezier(.34,1.56,.64,1)">
+  <div id="export-modal" style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;width:440px;box-shadow:0 24px 64px rgba(0,0,0,.6);animation:modal-in .2s cubic-bezier(.34,1.56,.64,1)">
     <div style="padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
       <div style="font-size:16px;font-weight:600">Export SVG — LibreOffice Impress</div>
-      <button style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:none;background:transparent;color:var(--text2);cursor:pointer;font-size:18px;" onclick="closeExportModal()" aria-label="Fermer">✕</button>
+      <button style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:none;background:transparent;color:var(--text2);cursor:pointer;font-size:18px;" onclick="closeExportModal()">✕</button>
     </div>
     <div style="padding:20px 24px">
       <div class="form-group">
@@ -866,20 +971,31 @@
   </div>
 </div>
 
+<!-- NEST MODAL -->
+<div id="nest-overlay" onclick="if(event.target===this)closeNestModal()" style="position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:12px;width:420px;max-height:80vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.6);animation:modal-in .2s cubic-bezier(.34,1.56,.64,1)">
+    <div style="padding:18px 24px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-size:15px;font-weight:600">Nester la tâche dans…</div>
+      <button onclick="closeNestModal()" style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:none;background:transparent;color:var(--text2);cursor:pointer;font-size:18px;">✕</button>
+    </div>
+    <div style="padding:12px 16px;overflow-y:auto;flex:1;" id="nest-list"></div>
+    <div style="padding:14px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;">
+      <button class="btn btn-ghost" onclick="closeNestModal()">Annuler</button>
+    </div>
+  </div>
+</div>
+
 <!-- CONFIRM DIALOG -->
 <div id="confirm-overlay">
-  <div id="confirm-box" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-msg">
+  <div id="confirm-box">
     <div id="confirm-title"></div>
     <div id="confirm-msg"></div>
     <div id="confirm-btns"></div>
   </div>
 </div>
 
-<!-- DRAG DATE TOOLTIP -->
-<div id="drag-date-tip"></div>
-
 <!-- TOOLTIP -->
-<div id="tooltip" role="tooltip"></div>
+<div id="tooltip"></div>
 
 <!-- HIDDEN FILE INPUT -->
 <input type="file" id="file-input" accept=".json" style="display:none" onchange="onFileLoad(event)">
@@ -891,63 +1007,40 @@
 let tasks = [];
 let nextId = 1;
 let selectedTaskId = null;
-let dragState = null;
-let currentZoom = 'days';
-let currentTheme = 'dark';
+let dragState = null; // { taskId, startY, moved }
+let currentZoom = 'days'; // 'days' | 'weeks' | 'months'
+let currentTheme = 'dark'; // 'dark' | 'light'
 let searchQuery = '';
 
-// ─── UNDO / REDO ───
-let undoStack = [];
-let redoStack = [];
-const UNDO_LIMIT = 50;
-
-function pushUndo() {
-  undoStack.push({ tasks: JSON.parse(JSON.stringify(tasks)), nextId });
-  if (undoStack.length > UNDO_LIMIT) undoStack.shift();
-  redoStack = [];
-  updateUndoRedoBtns();
-}
-
-function undo() {
-  if (!undoStack.length) return;
-  redoStack.push({ tasks: JSON.parse(JSON.stringify(tasks)), nextId });
-  const state = undoStack.pop();
-  tasks = state.tasks;
-  nextId = state.nextId;
-  updateUndoRedoBtns();
-  render();
-  showSaveIndicator('Annulation ✓');
-}
-
-function redo() {
-  if (!redoStack.length) return;
-  undoStack.push({ tasks: JSON.parse(JSON.stringify(tasks)), nextId });
-  const state = redoStack.pop();
-  tasks = state.tasks;
-  nextId = state.nextId;
-  updateUndoRedoBtns();
-  render();
-  showSaveIndicator('Rétablissement ✓');
-}
-
-function updateUndoRedoBtns() {
-  document.getElementById('undo-btn').disabled = undoStack.length === 0;
-  document.getElementById('redo-btn').disabled = redoStack.length === 0;
-}
-
-// ─── THEME ───
+// Color palettes for screen rendering (header) and SVG export
 const THEMES = {
   dark: {
-    bg: '#0D1117', surface: '#161B22', surface2: '#1C2128',
-    border: '#30363D', text: '#E6EDF3', text2: '#8B949E',
-    accent: '#58A6FF', today: '#FF6B6B',
-    rowEven: '#0D1117', rowOdd: '#111820', rowSum: '#1A1A2E', legendBg: '#161B22',
+    bg:        '#0D1117',
+    surface:   '#161B22',
+    surface2:  '#1C2128',
+    border:    '#30363D',
+    text:      '#E6EDF3',
+    text2:     '#8B949E',
+    accent:    '#58A6FF',
+    today:     '#FF6B6B',
+    rowEven:   '#0D1117',
+    rowOdd:    '#111820',
+    rowSum:    '#1A1A2E',
+    legendBg:  '#161B22',
   },
   light: {
-    bg: '#FFFFFF', surface: '#F6F8FA', surface2: '#EAEEF2',
-    border: '#D0D7DE', text: '#1F2328', text2: '#57606A',
-    accent: '#0969DA', today: '#CF222E',
-    rowEven: '#FFFFFF', rowOdd: '#F6F8FA', rowSum: '#F3EEFF', legendBg: '#F6F8FA',
+    bg:        '#FFFFFF',
+    surface:   '#F6F8FA',
+    surface2:  '#EAEEF2',
+    border:    '#D0D7DE',
+    text:      '#1F2328',
+    text2:     '#57606A',
+    accent:    '#0969DA',
+    today:     '#CF222E',
+    rowEven:   '#FFFFFF',
+    rowOdd:    '#F6F8FA',
+    rowSum:    '#F3EEFF',
+    legendBg:  '#F6F8FA',
   }
 };
 
@@ -957,12 +1050,13 @@ function toggleTheme() {
   document.getElementById('theme-label').textContent = currentTheme === 'dark' ? 'Clair' : 'Sombre';
   render();
 }
-
 let editingTaskId = null;
 let editingParentId = null;
 let editingForcedType = null;
 
+// Zoom config: px per day
 const ZOOM_CONFIG = { days: 28, weeks: 10, months: 4, years: 1.5 };
+
 function getPxPerDay() { return ZOOM_CONFIG[currentZoom]; }
 
 function today() {
@@ -973,7 +1067,7 @@ function today() {
 function parseDate(s) {
   if (!s) return null;
   const [y,m,d] = s.split('-').map(Number);
-  return new Date(y, m-1, d);
+  return new Date(y,m-1,d);
 }
 
 function formatDate(s) {
@@ -982,7 +1076,7 @@ function formatDate(s) {
   return `${d}/${m}/${y}`;
 }
 
-function dateDiff(a, b) {
+function dateDiff(a, b) { // days between two date strings
   return Math.round((parseDate(b) - parseDate(a)) / 86400000);
 }
 
@@ -1026,6 +1120,7 @@ function recalcSummary(id) {
 }
 
 function recalcAllSummaries() {
+  // bottom-up
   const order = [];
   const visit = (id) => {
     getChildren(id).forEach(c => visit(c.id));
@@ -1036,7 +1131,7 @@ function recalcAllSummaries() {
 }
 
 // ═══════════════════════════════════════════════════
-// VISIBLE ROWS (search + collapse)
+// VISIBLE ROWS (respects collapse)
 // ═══════════════════════════════════════════════════
 function getVisibleRows() {
   if (searchQuery) {
@@ -1068,10 +1163,14 @@ function getVisibleRows() {
 
   const rows = [];
   const visit = (parentId, level) => {
-    tasks.filter(t => t.parentId === parentId).sort((a,b) => a.order - b.order).forEach(t => {
+    const children = tasks.filter(t => t.parentId === parentId)
+      .sort((a,b) => a.order - b.order);
+    for (const t of children) {
       rows.push({ task: t, level });
-      if (t.type === 'summary' && !t.collapsed) visit(t.id, level + 1);
-    });
+      if (t.type === 'summary' && !t.collapsed) {
+        visit(t.id, level + 1);
+      }
+    }
   };
   visit(null, 0);
   return rows;
@@ -1113,147 +1212,6 @@ function getProjectRange() {
 }
 
 // ═══════════════════════════════════════════════════
-// UNIFIED TIMELINE HEADER SVG BUILDER
-// ═══════════════════════════════════════════════════
-function buildTimelineHeaderSVG({ range, totalDays, pxDay, headerH, offsetX = 0, zoom, theme }) {
-  const T = THEMES[theme];
-  const rowH = headerH / 2;
-  const MONTHS_FR = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
-  const MONTHS_FULL = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-  let html = '';
-
-  // Background for the timeline area
-  html += `<rect x="${offsetX}" width="${totalDays * pxDay}" height="${headerH}" fill="${T.surface2}"/>`;
-  html += `<rect x="${offsetX}" y="${rowH}" width="${totalDays * pxDay}" height="${rowH}" fill="${T.surface}"/>`;
-
-  if (zoom === 'days') {
-    // Top: months
-    let curMonth = -1, monthStartX = offsetX, curMonthYear = 0; // FIX: curMonthYear declared with let
-    for (let i = 0; i <= totalDays; i++) {
-      const d = parseDate(addDays(range.start, i));
-      const m = d.getMonth(), y = d.getFullYear();
-      if (m !== curMonth || i === totalDays) {
-        if (curMonth !== -1) {
-          const w = offsetX + i * pxDay - monthStartX;
-          html += `<text x="${monthStartX + w/2}" y="${rowH/2 + 5}" text-anchor="middle" font-family="Outfit,sans-serif" font-size="11" font-weight="600" fill="${T.text}">${MONTHS_FULL[curMonth]} ${curMonthYear}</text>`;
-          html += `<line x1="${offsetX + i * pxDay}" y1="0" x2="${offsetX + i * pxDay}" y2="${rowH}" stroke="${T.border}" stroke-width="1"/>`;
-        }
-        curMonth = m; curMonthYear = y; monthStartX = offsetX + i * pxDay;
-      }
-    }
-    // Bottom: day numbers
-    for (let i = 0; i < totalDays; i++) {
-      const d = parseDate(addDays(range.start, i));
-      const day = d.getDate(), dow = d.getDay();
-      const x = offsetX + i * pxDay;
-      const isWeekend = dow === 0 || dow === 6;
-      const isToday = addDays(range.start, i) === today();
-      if (isWeekend) html += `<rect x="${x}" y="${rowH}" width="${pxDay}" height="${rowH}" fill="rgba(255,255,255,0.03)"/>`;
-      if (isToday) html += `<rect x="${x}" y="${rowH}" width="${pxDay}" height="${rowH}" fill="rgba(255,107,107,0.15)"/>`;
-      if (pxDay >= 16) {
-        html += `<text x="${x + pxDay/2}" y="${rowH + rowH/2 + 5}" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="${isToday ? T.today : T.text2}">${day}</text>`;
-      }
-      html += `<line x1="${x}" y1="${rowH}" x2="${x}" y2="${headerH}" stroke="${T.border}" stroke-width="${pxDay >= 20 ? '1' : '0.5'}"/>`;
-    }
-
-  } else if (zoom === 'weeks') {
-    // Top: months
-    let curMonth = -1, monthStartX = offsetX, curMonthYear = 0; // FIX: curMonthYear declared with let
-    for (let i = 0; i <= totalDays; i++) {
-      const d = parseDate(addDays(range.start, i));
-      const m = d.getMonth(), y = d.getFullYear();
-      if (m !== curMonth || i === totalDays) {
-        if (curMonth !== -1) {
-          const w = offsetX + i * pxDay - monthStartX;
-          html += `<text x="${monthStartX + w/2}" y="${rowH/2 + 5}" text-anchor="middle" font-family="Outfit,sans-serif" font-size="11" font-weight="600" fill="${T.text}">${MONTHS_FULL[curMonth]} ${curMonthYear}</text>`;
-          html += `<line x1="${offsetX + i * pxDay}" y1="0" x2="${offsetX + i * pxDay}" y2="${rowH}" stroke="${T.border}" stroke-width="1"/>`;
-        }
-        curMonth = m; curMonthYear = y; monthStartX = offsetX + i * pxDay;
-      }
-    }
-    // Bottom: ISO week numbers
-    let prevWeek = -1;
-    for (let i = 0; i < totalDays; i++) {
-      const d = parseDate(addDays(range.start, i));
-      const week = getISOWeek(d);
-      const x = offsetX + i * pxDay;
-      if (week !== prevWeek) {
-        html += `<text x="${x + 2}" y="${rowH + rowH/2 + 5}" font-family="JetBrains Mono,monospace" font-size="10" fill="${T.text2}">S${week}</text>`;
-        html += `<line x1="${x}" y1="${rowH}" x2="${x}" y2="${headerH}" stroke="${T.border}" stroke-width="1"/>`;
-        prevWeek = week;
-      }
-    }
-
-  } else if (zoom === 'years') {
-    // Top: years
-    let curYear = -1, yearStartX = offsetX;
-    for (let i = 0; i <= totalDays; i++) {
-      const d = parseDate(addDays(range.start, i));
-      const y = d.getFullYear();
-      if (y !== curYear || i === totalDays) {
-        if (curYear !== -1) {
-          const w = offsetX + i * pxDay - yearStartX;
-          html += `<text x="${yearStartX + w/2}" y="${rowH/2 + 5}" text-anchor="middle" font-family="Outfit,sans-serif" font-size="12" font-weight="700" fill="${T.text}">${curYear}</text>`;
-          html += `<line x1="${offsetX + i * pxDay}" y1="0" x2="${offsetX + i * pxDay}" y2="${rowH}" stroke="${T.border}" stroke-width="1.5"/>`;
-        }
-        curYear = y; yearStartX = offsetX + i * pxDay;
-      }
-    }
-    // Bottom: quarters T1–T4
-    const QUARTERS = ['T1','T2','T3','T4'];
-    let prevQ = -1, prevYr = -1, qStartX = offsetX;
-    for (let i = 0; i <= totalDays; i++) {
-      const d = parseDate(addDays(range.start, i));
-      const q = Math.floor(d.getMonth() / 3), y = d.getFullYear();
-      if (q !== prevQ || y !== prevYr || i === totalDays) {
-        if (prevQ !== -1) {
-          const w = offsetX + i * pxDay - qStartX;
-          if (w > 18) html += `<text x="${qStartX + w/2}" y="${rowH + rowH/2 + 5}" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" font-weight="500" fill="${T.accent}">${QUARTERS[prevQ]}</text>`;
-          html += `<line x1="${offsetX + i * pxDay}" y1="${rowH}" x2="${offsetX + i * pxDay}" y2="${headerH}" stroke="${T.border}" stroke-width="1"/>`;
-        }
-        prevQ = q; prevYr = y; qStartX = offsetX + i * pxDay;
-      }
-    }
-
-  } else { // months
-    // Top: years
-    let curYear = -1, yearStartX = offsetX;
-    for (let i = 0; i <= totalDays; i++) {
-      const d = parseDate(addDays(range.start, i));
-      const y = d.getFullYear();
-      if (y !== curYear || i === totalDays) {
-        if (curYear !== -1) {
-          const w = offsetX + i * pxDay - yearStartX;
-          html += `<text x="${yearStartX + w/2}" y="${rowH/2 + 5}" text-anchor="middle" font-family="Outfit,sans-serif" font-size="11" font-weight="600" fill="${T.text}">${curYear}</text>`;
-          html += `<line x1="${offsetX + i * pxDay}" y1="0" x2="${offsetX + i * pxDay}" y2="${rowH}" stroke="${T.border}" stroke-width="1"/>`;
-        }
-        curYear = y; yearStartX = offsetX + i * pxDay;
-      }
-    }
-    // Bottom: month abbreviations
-    let curMonth = -1, monthStartX = offsetX;
-    for (let i = 0; i <= totalDays; i++) {
-      const d = parseDate(addDays(range.start, i));
-      const m = d.getMonth();
-      if (m !== curMonth || i === totalDays) {
-        if (curMonth !== -1) {
-          const w = offsetX + i * pxDay - monthStartX;
-          html += `<text x="${monthStartX + w/2}" y="${rowH + rowH/2 + 5}" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="${T.text2}">${MONTHS_FR[curMonth]}</text>`;
-          html += `<line x1="${offsetX + i * pxDay}" y1="${rowH}" x2="${offsetX + i * pxDay}" y2="${headerH}" stroke="${T.border}" stroke-width="1"/>`;
-        }
-        curMonth = m; monthStartX = offsetX + i * pxDay;
-      }
-    }
-  }
-
-  // Separator lines
-  html += `<line x1="${offsetX}" y1="${headerH - 1}" x2="${offsetX + totalDays * pxDay}" y2="${headerH - 1}" stroke="${T.border}" stroke-width="1"/>`;
-  html += `<line x1="${offsetX}" y1="${rowH}" x2="${offsetX + totalDays * pxDay}" y2="${rowH}" stroke="${T.border}" stroke-width="1"/>`;
-
-  return html;
-}
-
-// ═══════════════════════════════════════════════════
 // RENDER
 // ═══════════════════════════════════════════════════
 function render() {
@@ -1285,6 +1243,8 @@ function renderTaskList() {
     return;
   }
   empty.classList.remove('visible');
+
+  // Keep empty state in DOM
   body.innerHTML = '';
   body.appendChild(empty);
 
@@ -1296,50 +1256,43 @@ function renderTaskList() {
     const row = document.createElement('div');
     row.className = 'task-row' + (isSummary ? ' summary-row' : '') + (task.id === selectedTaskId ? ' selected' : '');
     row.dataset.id = task.id;
-    row.setAttribute('role', 'option');
-    row.setAttribute('aria-selected', task.id === selectedTaskId ? 'true' : 'false');
     row.style.paddingLeft = (8 + level * 20) + 'px';
-    row.onclick = (e) => { if (e.target.closest('button')) return; selectedTaskId = task.id; render(); };
-    row.ondblclick = (e) => { if (e.target.closest('button')) return; openModal(null, task.id); };
+    row.onclick = (e) => {
+      if (e.target.closest('button')) return;
+      selectedTaskId = task.id;
+      render();
+    };
+    row.ondblclick = (e) => {
+      if (e.target.closest('button')) return;
+      openModal(null, task.id);
+    };
 
     // Name cell
     const nameCell = document.createElement('div');
     nameCell.className = 'task-name-cell';
 
-    // Drag grip
-    const grip = document.createElement('div');
-    grip.className = 'drag-grip';
-    grip.innerHTML = '<svg width="10" height="14" viewBox="0 0 10 14" fill="none"><circle cx="3" cy="3" r="1.2" fill="currentColor"/><circle cx="7" cy="3" r="1.2" fill="currentColor"/><circle cx="3" cy="7" r="1.2" fill="currentColor"/><circle cx="7" cy="7" r="1.2" fill="currentColor"/><circle cx="3" cy="11" r="1.2" fill="currentColor"/><circle cx="7" cy="11" r="1.2" fill="currentColor"/></svg>';
-    grip.title = 'Glisser pour déplacer';
-    grip.setAttribute('aria-hidden', 'true');
-    grip.addEventListener('mousedown', (e) => { e.stopPropagation(); startRowDrag(e, task.id); });
-    nameCell.appendChild(grip);
-
-    // Collapse button for summary
     if (isSummary) {
       const colBtn = document.createElement('button');
       colBtn.className = 'collapse-btn' + (task.collapsed ? ' collapsed' : '');
       colBtn.innerHTML = '<svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 2l3 4 3-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
       colBtn.title = task.collapsed ? 'Développer' : 'Réduire';
-      colBtn.setAttribute('aria-expanded', task.collapsed ? 'false' : 'true');
       colBtn.onclick = (e) => { e.stopPropagation(); task.collapsed = !task.collapsed; render(); };
       nameCell.appendChild(colBtn);
     } else {
       const spacer = document.createElement('span');
-      spacer.style.cssText = 'width:20px;flex-shrink:0';
+      spacer.style.width = '20px';
+      spacer.style.flexShrink = '0';
       nameCell.appendChild(spacer);
     }
 
     // Type icon
     const icon = document.createElement('span');
     icon.className = 'type-icon';
-    icon.setAttribute('aria-hidden', 'true');
     if (isMilestone) icon.innerHTML = '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="2" y="2" width="6" height="6" fill="var(--milestone)" transform="rotate(45 5 5)"/></svg>';
     else if (isSummary) icon.innerHTML = '<svg width="12" height="10" viewBox="0 0 12 10" fill="none"><rect x="0" y="2" width="12" height="4" rx="2" fill="var(--summary)" opacity=".7"/></svg>';
     else icon.innerHTML = '<svg width="12" height="8" viewBox="0 0 12 8" fill="none"><rect x="0" y="0" width="12" height="8" rx="2" fill="var(--accent)" opacity=".7"/></svg>';
     nameCell.appendChild(icon);
 
-    // Task label (with optional search highlight)
     const label = document.createElement('span');
     label.className = 'task-label' + (isSummary ? ' summary' : isMilestone ? ' milestone' : '');
     label.title = task.name;
@@ -1354,25 +1307,36 @@ function renderTaskList() {
     }
     nameCell.appendChild(label);
 
+    // Drag grip handle
+    const grip = document.createElement('div');
+    grip.className = 'drag-grip';
+    grip.innerHTML = '<svg width="10" height="14" viewBox="0 0 10 14" fill="none"><circle cx="3" cy="3" r="1.2" fill="currentColor"/><circle cx="7" cy="3" r="1.2" fill="currentColor"/><circle cx="3" cy="7" r="1.2" fill="currentColor"/><circle cx="7" cy="7" r="1.2" fill="currentColor"/><circle cx="3" cy="11" r="1.2" fill="currentColor"/><circle cx="7" cy="11" r="1.2" fill="currentColor"/></svg>';
+    grip.title = 'Glisser pour déplacer';
+    grip.addEventListener('mousedown', (e) => { e.stopPropagation(); startRowDrag(e, task.id); });
+    // Insert grip at the very start of nameCell
+    nameCell.insertBefore(grip, nameCell.firstChild);
+
     row.appendChild(nameCell);
 
-    // Date cells
-    row.appendChild(makeInlineDateCell(task, 'start', isMilestone));
-    row.appendChild(makeInlineDateCell(task, 'end', isMilestone));
+    // Dates — inline editable
+    const startCell = makeInlineDateCell(task, 'start', isMilestone);
+    row.appendChild(startCell);
+
+    const endCell = makeInlineDateCell(task, 'end', isMilestone);
+    row.appendChild(endCell);
 
     // Actions
     const actions = document.createElement('div');
     actions.className = 'task-actions';
-    actions.setAttribute('aria-hidden', 'true');
 
     const editBtn = document.createElement('button');
     editBtn.className = 'act-btn';
-    editBtn.title = 'Modifier (Entrée)';
+    editBtn.title = 'Modifier';
     editBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 9.5l1.5-1.5 6-6 1.5 1.5-6 6L2 9.5z" stroke="currentColor" stroke-width="1.2"/><path d="M8 2.5l1.5 1.5" stroke="currentColor" stroke-width="1.2"/></svg>';
     editBtn.onclick = (e) => { e.stopPropagation(); openModal(null, task.id); };
     actions.appendChild(editBtn);
 
-    if (type !== 'milestone') {
+    if (isSummary || type !== 'milestone') {
       const addSubBtn = document.createElement('button');
       addSubBtn.className = 'act-btn';
       addSubBtn.title = 'Ajouter une sous-tâche';
@@ -1381,9 +1345,16 @@ function renderTaskList() {
       actions.appendChild(addSubBtn);
     }
 
+    const nestBtn = document.createElement('button');
+    nestBtn.className = 'act-btn';
+    nestBtn.title = 'Nester dans une autre tâche…';
+    nestBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2h4v2H2z" fill="currentColor" opacity=".4"/><path d="M5 6h5v2H5z" fill="currentColor" opacity=".7"/><path d="M2 4l3 2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>';
+    nestBtn.onclick = (e) => { e.stopPropagation(); openNestModal(task.id); };
+    actions.appendChild(nestBtn);
+
     const delBtn = document.createElement('button');
     delBtn.className = 'act-btn danger';
-    delBtn.title = 'Supprimer (Suppr)';
+    delBtn.title = 'Supprimer';
     delBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 3h8M5 3V2h2v1M3 3l.5 7h5L9 3" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     delBtn.onclick = (e) => { e.stopPropagation(); confirmDelete(task.id); };
     actions.appendChild(delBtn);
@@ -1401,52 +1372,80 @@ function makeInlineDateCell(task, field, isMilestone) {
 
   function showLabel() {
     cell.classList.remove('editing');
-    if (field === 'end' && isMilestone) { cell.textContent = '—'; return; }
+    if (field === 'end' && isMilestone) {
+      cell.textContent = '—';
+      return;
+    }
     cell.textContent = formatDate(field === 'start' ? task.startDate : task.endDate);
   }
 
   function activateInput(e) {
     e.stopPropagation();
-    if (field === 'end' && isMilestone) return;
+    if (field === 'end' && isMilestone) return; // jalons : fin non éditable
     cell.classList.add('editing');
     cell.textContent = '';
+
     const input = document.createElement('input');
     input.type = 'date';
     input.className = 'inline-date-input';
     input.value = field === 'start' ? task.startDate : task.endDate;
     cell.appendChild(input);
+
+    // Ouvrir le picker natif immédiatement
     setTimeout(() => { input.focus(); }, 30);
 
     function commit() {
       const val = input.value;
       if (!val) { showLabel(); return; }
+
+      // Validation : fin >= début
       if (field === 'start') {
         if (val > task.endDate) {
+          // Décaler la fin du même écart
           const diff = dateDiff(task.startDate, task.endDate);
-          pushUndo();
           task.startDate = val;
           task.endDate = addDays(val, diff);
         } else {
-          pushUndo();
           task.startDate = val;
         }
       } else {
         if (val < task.startDate) {
           input.style.borderColor = 'var(--danger)';
-          setTimeout(() => { input.style.borderColor = ''; }, 1500);
+          input.title = 'La date de fin ne peut pas être antérieure au début';
+          setTimeout(() => { input.style.borderColor = ''; input.title = ''; }, 1500);
           return;
         }
-        pushUndo();
         task.endDate = val;
       }
       render();
     }
 
     let cancelled = false;
-    input.addEventListener('blur', () => { if (!cancelled) commit(); else showLabel(); });
+    let committed = false;
+
+    // 'change' se déclenche uniquement quand les 3 segments
+    // (jour, mois, année) sont entièrement saisis — jamais en cours de frappe.
+    input.addEventListener('change', () => {
+      if (!cancelled && !committed) {
+        committed = true;
+        commit();
+      }
+    });
+
+    // 'blur' en secours : le picker natif peut voler le focus brièvement,
+    // on attend 200 ms pour vérifier que le focus ne revient pas.
+    input.addEventListener('blur', () => {
+      if (committed) return;
+      setTimeout(() => {
+        if (document.activeElement === input) return; // focus revenu
+        if (!cancelled) { if (!committed) { committed = true; commit(); } }
+        else showLabel();
+      }, 200);
+    });
+
     input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter')  { e.preventDefault(); input.blur(); }
-      if (e.key === 'Escape') { e.preventDefault(); cancelled = true; input.blur(); }
+      if (e.key === 'Enter')  { e.preventDefault(); if (!committed) { committed = true; commit(); } }
+      if (e.key === 'Escape') { e.preventDefault(); cancelled = true; showLabel(); }
     });
   }
 
@@ -1456,24 +1455,18 @@ function makeInlineDateCell(task, field, isMilestone) {
 }
 
 // ─── GANTT ───
+let ganttScrollLeft = 0;
+
 function renderGantt() {
   const range = getProjectRange();
   const pxDay = getPxPerDay();
   const totalDays = dateDiff(range.start, range.end) + 1;
   const totalW = totalDays * pxDay;
   const rows = getVisibleRows();
-  const rowHPx = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--row-h'));
-  const totalH = rows.length * rowHPx;
+  const totalH = rows.length * parseInt(getComputedStyle(document.documentElement).getPropertyValue('--row-h'));
 
-  // Header — uses unified builder
-  const headerSVG = document.getElementById('gantt-header-svg');
-  const headerH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h'));
-  headerSVG.setAttribute('width', totalW);
-  headerSVG.setAttribute('height', headerH);
-  headerSVG.innerHTML = buildTimelineHeaderSVG({
-    range, totalDays, pxDay, headerH, offsetX: 0,
-    zoom: currentZoom, theme: currentTheme
-  });
+  // Header
+  renderGanttHeader(range, totalW, pxDay);
 
   // Canvas
   const canvas = document.getElementById('gantt-canvas');
@@ -1481,6 +1474,7 @@ function renderGantt() {
   canvas.style.height = totalH + 'px';
   canvas.innerHTML = '';
 
+  // Grid lines
   renderGridLines(canvas, range, totalW, totalH, pxDay);
 
   // Today line
@@ -1497,23 +1491,26 @@ function renderGantt() {
   rows.forEach(({ task }, i) => {
     const bg = document.createElement('div');
     bg.className = 'gantt-row-bg ' + (task.type === 'summary' ? 'summary' : i % 2 === 0 ? 'even' : 'odd');
-    bg.style.top = (i * rowHPx) + 'px';
+    bg.style.top = (i * parseInt(getComputedStyle(document.documentElement).getPropertyValue('--row-h'))) + 'px';
     canvas.appendChild(bg);
   });
 
+  // Bars & milestones
+  const rowH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--row-h'));
   const barH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--bar-h'));
 
   rows.forEach(({ task }, i) => {
     if (!task.startDate || !task.endDate) return;
     const type = getTaskType(task);
-    const top = i * rowHPx;
+    const top = i * rowH;
     const x = dateDiff(range.start, task.startDate) * pxDay;
 
     if (type === 'milestone') {
       const size = 14;
       const diamond = document.createElement('div');
       diamond.className = 'milestone-diamond';
-      diamond.style.cssText = `left:${x - size/2}px;top:${top + rowHPx/2 - size/2}px;width:${size}px;height:${size}px;`;
+      diamond.style.cssText = `left:${x - size/2}px;top:${top + rowH/2 - size/2}px;width:${size}px;height:${size}px;`;
+      diamond.title = `${task.name}\n${formatDate(task.startDate)}`;
       diamond.dataset.id = task.id;
       addTooltipHandlers(diamond, buildTooltip(task));
       diamond.onclick = () => { selectedTaskId = task.id; renderTaskList(); };
@@ -1522,7 +1519,7 @@ function renderGantt() {
 
       const lbl = document.createElement('div');
       lbl.className = 'milestone-label';
-      lbl.style.cssText = `left:${x + size/2 + 6}px;top:${top + rowHPx/2 - 8}px;`;
+      lbl.style.cssText = `left:${x + size/2 + 6}px;top:${top + rowH/2 - 8}px;`;
       lbl.textContent = task.name;
       canvas.appendChild(lbl);
 
@@ -1533,7 +1530,7 @@ function renderGantt() {
 
       const wrapper = document.createElement('div');
       wrapper.className = 'gantt-bar-wrapper';
-      wrapper.style.cssText = `left:${x}px;top:${top + (rowHPx - barH)/2}px;width:${w}px;height:${barH}px;`;
+      wrapper.style.cssText = `left:${x}px;top:${top + (rowH - barH)/2}px;width:${w}px;height:${barH}px;`;
       wrapper.dataset.id = task.id;
 
       const bar = document.createElement('div');
@@ -1543,48 +1540,24 @@ function renderGantt() {
       bar.dataset.id = task.id;
 
       if (!isSummary) {
-        // Progress fill
-        const progress = task.progress || 0;
-        if (progress > 0) {
-          const fill = document.createElement('div');
-          fill.className = 'progress-fill';
-          fill.style.width = `${progress}%`;
-          bar.appendChild(fill);
-        }
-        const labelEl = document.createElement('div');
-        labelEl.className = 'bar-label';
-        labelEl.textContent = task.name;
-        bar.appendChild(labelEl);
-        const dragL = document.createElement('div');
-        dragL.className = 'drag-handle-left';
-        const dragR = document.createElement('div');
-        dragR.className = 'drag-handle-right';
-        bar.appendChild(dragL);
-        bar.appendChild(dragR);
+        bar.innerHTML = `<div class="bar-label">${task.name}</div><div class="drag-handle-left"></div><div class="drag-handle-right"></div>`;
         makeDraggable(bar, task, range, pxDay);
       } else {
-        const labelEl = document.createElement('div');
-        labelEl.className = 'bar-label';
-        labelEl.textContent = task.name;
-        bar.appendChild(labelEl);
-        const capL = document.createElement('div');
-        capL.className = 'summary-cap-left';
-        const capR = document.createElement('div');
-        capR.className = 'summary-cap-right';
-        bar.appendChild(capL);
-        bar.appendChild(capR);
+        bar.innerHTML = `<div class="bar-label">${task.name}</div><div class="summary-cap-left"></div><div class="summary-cap-right"></div>`;
       }
 
       addTooltipHandlers(bar, buildTooltip(task));
       bar.onclick = (e) => {
         if (e.target.classList.contains('drag-handle-left') || e.target.classList.contains('drag-handle-right')) return;
-        selectedTaskId = task.id; renderTaskList();
+        selectedTaskId = task.id;
+        renderTaskList();
       };
       bar.ondblclick = () => openModal(null, task.id);
 
       wrapper.appendChild(bar);
       canvas.appendChild(wrapper);
 
+      // Label outside if bar too narrow
       if (w < task.name.length * 7 + 12) {
         const lbl = document.createElement('div');
         lbl.className = 'bar-label-outside';
@@ -1596,7 +1569,170 @@ function renderGantt() {
     }
   });
 
-  syncGanttHeaderScroll(document.getElementById('gantt-body').scrollLeft);
+  // Sync horizontal scroll
+  const ganttBody = document.getElementById('gantt-body');
+  syncGanttHeaderScroll(ganttBody.scrollLeft);
+}
+
+function renderGanttHeader(range, totalW, pxDay) {
+  const svg = document.getElementById('gantt-header-svg');
+  const headerH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h'));
+  svg.setAttribute('width', totalW);
+  svg.setAttribute('height', headerH);
+
+  const totalDays = dateDiff(range.start, range.end) + 1;
+  let html = '';
+  const rowH = headerH / 2;
+
+  // Colors — theme-aware
+  const T = THEMES[currentTheme];
+  const bg1 = T.surface2; const bg2 = T.surface;
+  const textCol = T.text2; const textBold = T.text;
+  const borderCol = T.border;
+  const accent = T.accent;
+
+  // Background
+  html += `<rect width="${totalW}" height="${headerH}" fill="${bg1}"/>`;
+  html += `<rect y="${rowH}" width="${totalW}" height="${rowH}" fill="${bg2}"/>`;
+
+  const MONTHS_FR = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+  const MONTHS_FULL_FR = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+
+  if (currentZoom === 'days') {
+    // Top: months
+    let curMonth = -1, monthStart = 0;
+    for (let i = 0; i <= totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      const m = d.getMonth(); const y = d.getFullYear();
+      if (m !== curMonth || i === totalDays) {
+        if (curMonth !== -1) {
+          const w = i * pxDay - monthStart;
+          html += `<rect x="${monthStart}" y="0" width="${w}" height="${rowH}" fill="none"/>`;
+          html += `<text x="${monthStart + w/2}" y="${rowH/2 + 5}" text-anchor="middle" font-family="Outfit,sans-serif" font-size="11" font-weight="600" fill="${textBold}">${MONTHS_FULL_FR[curMonth]} ${curMonthYear}</text>`;
+          html += `<line x1="${i * pxDay}" y1="0" x2="${i * pxDay}" y2="${rowH}" stroke="${borderCol}" stroke-width="1"/>`;
+        }
+        curMonth = m; curMonthYear = y; monthStart = i * pxDay;
+      }
+    }
+    // Bottom: day numbers
+    for (let i = 0; i < totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      const day = d.getDate(); const dow = d.getDay();
+      const x = i * pxDay;
+      const isWeekend = dow === 0 || dow === 6;
+      if (isWeekend) html += `<rect x="${x}" y="${rowH}" width="${pxDay}" height="${rowH}" fill="rgba(255,255,255,0.03)"/>`;
+      const isToday = addDays(range.start, i) === today();
+      if (isToday) html += `<rect x="${x}" y="${rowH}" width="${pxDay}" height="${rowH}" fill="rgba(255,107,107,0.15)"/>`;
+      if (pxDay >= 16) {
+        html += `<text x="${x + pxDay/2}" y="${rowH + rowH/2 + 5}" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="${isToday ? '#FF6B6B' : isWeekend ? textCol : textCol}">${day}</text>`;
+      }
+      html += `<line x1="${x}" y1="${rowH}" x2="${x}" y2="${headerH}" stroke="${borderCol}" stroke-width="${pxDay >= 20 ? '1' : '0.5'}"/>`;
+    }
+
+  } else if (currentZoom === 'weeks') {
+    // Top: months
+    let curMonth = -1, monthStart = 0, curMonthYear = 0;
+    for (let i = 0; i <= totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      const m = d.getMonth(); const y = d.getFullYear();
+      if (m !== curMonth || i === totalDays) {
+        if (curMonth !== -1) {
+          const w = i * pxDay - monthStart;
+          html += `<text x="${monthStart + w/2}" y="${rowH/2 + 5}" text-anchor="middle" font-family="Outfit,sans-serif" font-size="11" font-weight="600" fill="${textBold}">${MONTHS_FULL_FR[curMonth]} ${curMonthYear}</text>`;
+          html += `<line x1="${i * pxDay}" y1="0" x2="${i * pxDay}" y2="${rowH}" stroke="${borderCol}" stroke-width="1"/>`;
+        }
+        curMonth = m; curMonthYear = y; monthStart = i * pxDay;
+      }
+    }
+    // Bottom: week numbers
+    let prevWeek = -1;
+    for (let i = 0; i < totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      const week = getISOWeek(d);
+      const x = i * pxDay;
+      if (week !== prevWeek) {
+        html += `<text x="${x + 2}" y="${rowH + rowH/2 + 5}" font-family="JetBrains Mono,monospace" font-size="10" fill="${textCol}">S${week}</text>`;
+        html += `<line x1="${x}" y1="${rowH}" x2="${x}" y2="${headerH}" stroke="${borderCol}" stroke-width="1"/>`;
+        prevWeek = week;
+      }
+    }
+
+  } else if (currentZoom === 'years') {
+    // Top: years — one block per year
+    let curYear = -1, yearStartX = 0;
+    for (let i = 0; i <= totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      const y = d.getFullYear();
+      if (y !== curYear || i === totalDays) {
+        if (curYear !== -1) {
+          const w = i * pxDay - yearStartX;
+          html += `<text x="${yearStartX + w/2}" y="${rowH/2 + 5}" text-anchor="middle" font-family="Outfit,sans-serif" font-size="12" font-weight="700" fill="${textBold}">${curYear}</text>`;
+          html += `<line x1="${i * pxDay}" y1="0" x2="${i * pxDay}" y2="${rowH}" stroke="${borderCol}" stroke-width="1.5"/>`;
+        }
+        curYear = y; yearStartX = i * pxDay;
+      }
+    }
+    // Bottom: quarters T1–T4
+    const QUARTERS = ['T1','T2','T3','T4'];
+    const QUARTER_MONTHS = [0, 3, 6, 9]; // Jan, Apr, Jul, Oct
+    let prevQ = -1;
+    for (let i = 0; i < totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      const q = Math.floor(d.getMonth() / 3);
+      const x = i * pxDay;
+      if (q !== prevQ) {
+        html += `<line x1="${x}" y1="${rowH}" x2="${x}" y2="${headerH}" stroke="${borderCol}" stroke-width="1"/>`;
+        // Find width of this quarter to center the label
+        let qEnd = i;
+        while (qEnd < totalDays) {
+          const dd = parseDate(addDays(range.start, qEnd));
+          if (Math.floor(dd.getMonth() / 3) !== q || dd.getFullYear() !== d.getFullYear()) break;
+          qEnd++;
+        }
+        const qW = (qEnd - i) * pxDay;
+        if (qW > 18) {
+          html += `<text x="${x + qW/2}" y="${rowH + rowH/2 + 5}" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" font-weight="500" fill="${accent}">${QUARTERS[q]}</text>`;
+        }
+        prevQ = q;
+      }
+    }
+
+  } else { // months
+    // Top: years
+    let curYear = -1, yearStart = 0;
+    for (let i = 0; i <= totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      const y = d.getFullYear();
+      if (y !== curYear || i === totalDays) {
+        if (curYear !== -1) {
+          const w = i * pxDay - yearStart;
+          html += `<text x="${yearStart + w/2}" y="${rowH/2 + 5}" text-anchor="middle" font-family="Outfit,sans-serif" font-size="11" font-weight="600" fill="${textBold}">${curYear}</text>`;
+          html += `<line x1="${i * pxDay}" y1="0" x2="${i * pxDay}" y2="${rowH}" stroke="${borderCol}" stroke-width="1"/>`;
+        }
+        curYear = y; yearStart = i * pxDay;
+      }
+    }
+    // Bottom: months
+    let curMonth = -1, monthStart = 0;
+    for (let i = 0; i <= totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      const m = d.getMonth();
+      if (m !== curMonth || i === totalDays) {
+        if (curMonth !== -1) {
+          const w = i * pxDay - monthStart;
+          html += `<text x="${monthStart + w/2}" y="${rowH + rowH/2 + 5}" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="10" fill="${textCol}">${MONTHS_FR[curMonth]}</text>`;
+          html += `<line x1="${i * pxDay}" y1="${rowH}" x2="${i * pxDay}" y2="${headerH}" stroke="${borderCol}" stroke-width="1"/>`;
+        }
+        curMonth = m; monthStart = i * pxDay;
+      }
+    }
+  }
+
+  // Bottom border
+  html += `<line x1="0" y1="${headerH - 1}" x2="${totalW}" y2="${headerH - 1}" stroke="${borderCol}" stroke-width="1"/>`;
+  html += `<line x1="0" y1="${rowH}" x2="${totalW}" y2="${rowH}" stroke="${borderCol}" stroke-width="1"/>`;
+
+  svg.innerHTML = html;
 }
 
 function renderGridLines(canvas, range, totalW, totalH, pxDay) {
@@ -1604,10 +1740,12 @@ function renderGridLines(canvas, range, totalW, totalH, pxDay) {
   if (currentZoom === 'days') {
     for (let i = 0; i < totalDays; i++) {
       const d = parseDate(addDays(range.start, i));
-      if (d.getDay() === 1 || pxDay >= 20) {
+      const dow = d.getDay();
+      if (dow === 1 || pxDay >= 20) {
         const line = document.createElement('div');
         line.className = 'grid-line';
-        line.style.cssText = `left:${i * pxDay}px;height:${totalH}px;${d.getDay() === 1 ? 'opacity:.4' : ''}`;
+        line.style.cssText = `left:${i * pxDay}px;height:${totalH}px;`;
+        if (dow === 1) line.style.opacity = '0.4';
         canvas.appendChild(line);
       }
     }
@@ -1622,10 +1760,12 @@ function renderGridLines(canvas, range, totalW, totalH, pxDay) {
       }
     }
   } else if (currentZoom === 'years') {
+    // One grid line per quarter start
     let prevQ = -1, prevYear = -1;
     for (let i = 0; i < totalDays; i++) {
       const d = parseDate(addDays(range.start, i));
-      const q = Math.floor(d.getMonth() / 3), y = d.getFullYear();
+      const q = Math.floor(d.getMonth() / 3);
+      const y = d.getFullYear();
       if (q !== prevQ || y !== prevYear) {
         const line = document.createElement('div');
         line.className = 'grid-line';
@@ -1635,6 +1775,7 @@ function renderGridLines(canvas, range, totalW, totalH, pxDay) {
       }
     }
   } else {
+    // months: one line per month start
     for (let i = 0; i < totalDays; i++) {
       const d = parseDate(addDays(range.start, i));
       if (d.getDate() === 1) {
@@ -1659,6 +1800,7 @@ function getISOWeek(date) {
   const listBody = document.getElementById('task-list-body');
   const ganttBody = document.getElementById('gantt-body');
   let syncingFromList = false, syncingFromGantt = false;
+
   listBody.addEventListener('scroll', () => {
     if (syncingFromGantt) return;
     syncingFromList = true;
@@ -1675,7 +1817,9 @@ function getISOWeek(date) {
 })();
 
 function syncGanttHeaderScroll(scrollLeft) {
-  document.getElementById('gantt-header-svg').style.transform = `translateX(-${scrollLeft}px)`;
+  const header = document.getElementById('gantt-header');
+  const svg = document.getElementById('gantt-header-svg');
+  svg.style.transform = `translateX(-${scrollLeft}px)`;
 }
 
 // ─── SPLITTER ───
@@ -1683,8 +1827,11 @@ function syncGanttHeaderScroll(scrollLeft) {
   const splitter = document.getElementById('splitter');
   const leftPanel = document.getElementById('left-panel');
   let dragging = false, startX = 0, startW = 0;
+
   splitter.addEventListener('mousedown', (e) => {
-    dragging = true; startX = e.clientX; startW = leftPanel.offsetWidth;
+    dragging = true;
+    startX = e.clientX;
+    startW = leftPanel.offsetWidth;
     splitter.classList.add('dragging');
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
@@ -1697,15 +1844,21 @@ function syncGanttHeaderScroll(scrollLeft) {
   });
   document.addEventListener('mouseup', () => {
     if (!dragging) return;
-    dragging = false; splitter.classList.remove('dragging');
-    document.body.style.cursor = ''; document.body.style.userSelect = '';
+    dragging = false;
+    splitter.classList.remove('dragging');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
   });
 })();
 
 // ─── TOOLTIP ───
 const tooltipEl = document.getElementById('tooltip');
 function addTooltipHandlers(el, html) {
-  el.addEventListener('mouseenter', (e) => { tooltipEl.innerHTML = html; tooltipEl.classList.add('visible'); moveTooltip(e); });
+  el.addEventListener('mouseenter', (e) => {
+    tooltipEl.innerHTML = html;
+    tooltipEl.classList.add('visible');
+    moveTooltip(e);
+  });
   el.addEventListener('mousemove', moveTooltip);
   el.addEventListener('mouseleave', () => tooltipEl.classList.remove('visible'));
 }
@@ -1713,7 +1866,8 @@ function moveTooltip(e) {
   let x = e.clientX + 14, y = e.clientY + 14;
   if (x + 250 > window.innerWidth) x = e.clientX - 260;
   if (y + 80 > window.innerHeight) y = e.clientY - 80;
-  tooltipEl.style.left = x + 'px'; tooltipEl.style.top = y + 'px';
+  tooltipEl.style.left = x + 'px';
+  tooltipEl.style.top = y + 'px';
 }
 function buildTooltip(task) {
   const type = getTaskType(task);
@@ -1724,62 +1878,45 @@ function buildTooltip(task) {
   html += `<span style="color:var(--text2)">Début : ${formatDate(task.startDate)}</span><br>`;
   if (type !== 'milestone') html += `<span style="color:var(--text2)">Fin : ${formatDate(task.endDate)}</span><br>`;
   if (type !== 'milestone') html += `<span style="color:var(--text3)">Durée : ${dur} jour${dur > 1 ? 's' : ''}</span>`;
-  if (type === 'standard' && task.progress > 0) html += `<br><span style="color:var(--accent)">Avancement : ${task.progress}%</span>`;
   if (task.description) html += `<br><span style="color:var(--text3);font-size:11px">${task.description.substring(0,100)}${task.description.length > 100 ? '…' : ''}</span>`;
   return html;
 }
 
-// ─── DRAG TO MOVE / RESIZE BARS (with rAF debounce + undo + date tooltip) ───
-const dragDateTip = document.getElementById('drag-date-tip');
-
+// ─── DRAG TO MOVE/RESIZE BARS ───
 function makeDraggable(bar, task, range, pxDay) {
   bar.addEventListener('mousedown', (e) => {
     const isLeft = e.target.classList.contains('drag-handle-left');
     const isRight = e.target.classList.contains('drag-handle-right');
     const isMove = !isLeft && !isRight;
-    e.preventDefault(); e.stopPropagation();
-
-    pushUndo(); // Snapshot before drag
+    if (e.target.classList.contains('drag-handle-left') || e.target.classList.contains('drag-handle-right')) {
+      // resize
+    }
+    e.preventDefault();
+    e.stopPropagation();
 
     const startX = e.clientX;
     const origStart = task.startDate;
     const origEnd = task.endDate;
     document.body.style.cursor = isMove ? 'grabbing' : 'ew-resize';
 
-    let rafPending = false;
-    let lastClientX = e.clientX;
-
     const onMove = (ev) => {
-      lastClientX = ev.clientX;
-      if (rafPending) return;
-      rafPending = true;
-      requestAnimationFrame(() => {
-        rafPending = false;
-        const dx = lastClientX - startX;
-        const days = Math.round(dx / pxDay);
-        if (isMove) {
-          task.startDate = addDays(origStart, days);
-          task.endDate = addDays(origEnd, days);
-        } else if (isLeft) {
-          const newStart = addDays(origStart, days);
-          if (newStart <= origEnd) task.startDate = newStart;
-        } else {
-          const newEnd = addDays(origEnd, days);
-          if (newEnd >= origStart) task.endDate = newEnd;
-        }
-        // Show date tooltip
-        dragDateTip.textContent = isMove
-          ? `${formatDate(task.startDate)} → ${formatDate(task.endDate)}`
-          : isLeft ? `Début : ${formatDate(task.startDate)}` : `Fin : ${formatDate(task.endDate)}`;
-        dragDateTip.style.left = (lastClientX + 14) + 'px';
-        dragDateTip.style.top = (ev.clientY - 28) + 'px';
-        dragDateTip.classList.add('visible');
-        render();
-      });
+      const dx = ev.clientX - startX;
+      const days = Math.round(dx / pxDay);
+      if (days === 0) return;
+      if (isMove) {
+        task.startDate = addDays(origStart, days);
+        task.endDate = addDays(origEnd, days);
+      } else if (isLeft) {
+        const newStart = addDays(origStart, days);
+        if (newStart <= origEnd) task.startDate = newStart;
+      } else if (isRight) {
+        const newEnd = addDays(origEnd, days);
+        if (newEnd >= origStart) task.endDate = newEnd;
+      }
+      render();
     };
     const onUp = () => {
       document.body.style.cursor = '';
-      dragDateTip.classList.remove('visible');
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
     };
@@ -1790,38 +1927,31 @@ function makeDraggable(bar, task, range, pxDay) {
 
 // ─── STATUS BAR ───
 function updateStatusBar() {
-  document.getElementById('sb-count').textContent = tasks.length;
-  document.getElementById('sb-milestones').textContent = tasks.filter(t => getTaskType(t) === 'milestone').length;
-  if (tasks.length > 0) {
+  const count = tasks.length;
+  const milestones = tasks.filter(t => getTaskType(t) === 'milestone').length;
+  document.getElementById('sb-count').textContent = count;
+  document.getElementById('sb-milestones').textContent = milestones;
+
+  if (count > 0) {
     const range = getProjectRange();
-    document.getElementById('sb-duration').textContent = dateDiff(range.start, range.end) + ' jours';
+    const dur = dateDiff(range.start, range.end);
+    document.getElementById('sb-duration').textContent = dur + ' jours';
   } else {
     document.getElementById('sb-duration').textContent = '—';
   }
 }
 
 // ═══════════════════════════════════════════════════
-// MODAL — FOCUS TRAP
+// MODAL
 // ═══════════════════════════════════════════════════
-function trapFocus(el) {
-  const focusable = el.querySelectorAll('input, textarea, button, select, [tabindex]:not([tabindex="-1"])');
-  const first = focusable[0], last = focusable[focusable.length - 1];
-  el.addEventListener('keydown', function ft(e) {
-    if (e.key !== 'Tab') return;
-    if (e.shiftKey) { if (document.activeElement === first) { e.preventDefault(); last.focus(); } }
-    else { if (document.activeElement === last) { e.preventDefault(); first.focus(); } }
-    if (!document.getElementById('modal-overlay').classList.contains('open')) el.removeEventListener('keydown', ft);
-  });
-}
-
 function openModal(forcedType, editId = null, parentId = null) {
   editingTaskId = editId;
   editingParentId = parentId;
   editingForcedType = forcedType;
 
+  const modal = document.getElementById('modal');
   const overlay = document.getElementById('modal-overlay');
   const titleEl = document.getElementById('modal-title');
-  const progressGroup = document.getElementById('progress-group');
 
   if (editId !== null) {
     const task = tasks.find(t => t.id === editId);
@@ -1830,30 +1960,24 @@ function openModal(forcedType, editId = null, parentId = null) {
     document.getElementById('f-desc').value = task.description || '';
     document.getElementById('f-start').value = task.startDate;
     document.getElementById('f-end').value = task.endDate;
-    document.getElementById('f-progress').value = task.progress || 0;
-    document.getElementById('f-progress-val').textContent = (task.progress || 0) + '%';
     const type = getTaskType(task);
     titleEl.textContent = type === 'milestone' ? 'Modifier le jalon' : type === 'summary' ? 'Modifier la tâche récapitulative' : 'Modifier la tâche';
-    progressGroup.style.display = (type === 'milestone' || type === 'summary') ? 'none' : 'block';
+    document.getElementById('f-start').disabled = false;
+    document.getElementById('f-end').disabled = false;
   } else {
     const t = today();
     document.getElementById('f-name').value = '';
     document.getElementById('f-desc').value = '';
-    document.getElementById('f-start').value = t;
+    document.getElementById('f-start').value = forcedType === 'milestone' ? t : t;
     document.getElementById('f-end').value = forcedType === 'milestone' ? t : addDays(t, 7);
-    document.getElementById('f-progress').value = 0;
-    document.getElementById('f-progress-val').textContent = '0%';
+    document.getElementById('f-start').disabled = false;
+    document.getElementById('f-end').disabled = false;
     titleEl.textContent = forcedType === 'milestone' ? 'Nouveau jalon' : forcedType === 'summary' ? 'Nouvelle tâche récapitulative' : 'Nouvelle tâche';
-    progressGroup.style.display = forcedType === 'milestone' || forcedType === 'summary' ? 'none' : 'block';
   }
 
   updateTypeBadge();
   overlay.classList.add('open');
-  const modal = document.getElementById('modal');
-  setTimeout(() => {
-    document.getElementById('f-name').focus();
-    trapFocus(modal);
-  }, 100);
+  setTimeout(() => document.getElementById('f-name').focus(), 100);
 }
 
 function updateTypeBadge() {
@@ -1861,14 +1985,15 @@ function updateTypeBadge() {
   const end = document.getElementById('f-end').value;
   const ind = document.getElementById('type-indicator');
   if (!start || !end) { ind.innerHTML = ''; return; }
+
   let type = editingForcedType;
-  if (!type) type = (start === end) ? 'milestone' : 'standard';
+  if (!type) {
+    type = (start === end) ? 'milestone' : 'standard';
+  }
   const labels = { standard: 'Tâche standard', milestone: 'Jalon', summary: 'Tâche récapitulative' };
   const dur = start === end ? 0 : dateDiff(start, end) + 1;
   const durText = type !== 'milestone' ? ` — ${dur} jour${dur > 1 ? 's' : ''}` : '';
   ind.innerHTML = `<span class="form-badge badge-${type === 'summary' ? 'summary' : type}">${labels[type]}${durText}</span>`;
-  const progressGroup = document.getElementById('progress-group');
-  if (progressGroup) progressGroup.style.display = (type === 'milestone' || type === 'summary') ? 'none' : 'block';
 }
 
 document.getElementById('f-start').addEventListener('change', updateTypeBadge);
@@ -1884,7 +2009,6 @@ function saveTask() {
   const desc = document.getElementById('f-desc').value.trim();
   const start = document.getElementById('f-start').value;
   let end = document.getElementById('f-end').value;
-  const progress = parseInt(document.getElementById('f-progress').value) || 0;
 
   if (!name) { document.getElementById('f-name').style.borderColor = 'var(--danger)'; return; }
   if (!start) { alert('Date de début requise'); return; }
@@ -1895,16 +2019,17 @@ function saveTask() {
   let type = editingForcedType;
   if (!type) type = (start === end) ? 'milestone' : 'standard';
 
-  pushUndo();
-
   if (editingTaskId !== null) {
     const task = tasks.find(t => t.id === editingTaskId);
     task.name = name;
     task.description = desc;
-    task.startDate = start;
-    task.endDate = end;
-    task.progress = progress;
-    // FIX: was `!task.type === 'summary'` (always false) → correct comparison
+    if (!task.type === 'summary' || getChildren(task.id).length === 0) {
+      task.startDate = start;
+      task.endDate = end;
+    } else {
+      task.startDate = start;
+      task.endDate = end;
+    }
     if (task.type !== 'summary') {
       task.type = type;
     }
@@ -1918,8 +2043,7 @@ function saveTask() {
       type: editingForcedType || type,
       parentId: editingParentId || null,
       order: maxOrder + 1,
-      collapsed: false,
-      progress: progress
+      collapsed: false
     });
   }
 
@@ -1934,6 +2058,7 @@ function confirmDelete(id) {
   const task = tasks.find(t => t.id === id);
   if (!task) return;
   const children = getChildren(id);
+
   const overlay = document.getElementById('confirm-overlay');
   document.getElementById('confirm-title').textContent = `Supprimer "${task.name}" ?`;
 
@@ -1944,13 +2069,12 @@ function confirmDelete(id) {
       <button class="btn" style="background:var(--warning);color:#000;border-color:var(--warning)" onclick="deleteTask(${id}, true)">Remonter les sous-tâches</button>
       <button class="btn btn-danger" onclick="deleteTask(${id}, false)">Tout supprimer</button>`;
   } else {
-    document.getElementById('confirm-msg').textContent = 'Cette action est irréversible.';
+    document.getElementById('confirm-msg').textContent = `Cette action est irréversible.`;
     document.getElementById('confirm-btns').innerHTML = `
       <button class="btn btn-ghost" onclick="closeConfirm()">Annuler</button>
       <button class="btn btn-danger" onclick="deleteTask(${id}, false)">Supprimer</button>`;
   }
   overlay.classList.add('open');
-  setTimeout(() => overlay.querySelector('.btn-danger').focus(), 80);
 }
 
 function closeConfirm() {
@@ -1958,13 +2082,15 @@ function closeConfirm() {
 }
 
 function deleteTask(id, promoteChildren) {
-  pushUndo();
   const task = tasks.find(t => t.id === id);
   if (!task) return;
   closeConfirm();
+
   if (promoteChildren) {
+    // Move children to parent
     tasks.filter(t => t.parentId === id).forEach(t => t.parentId = task.parentId);
   } else {
+    // Delete all descendants
     const desc = getDescendants(id);
     desc.forEach(did => { tasks = tasks.filter(t => t.id !== did); });
   }
@@ -1974,7 +2100,7 @@ function deleteTask(id, promoteChildren) {
 }
 
 // ═══════════════════════════════════════════════════
-// ZOOM — FIX: single-pass calculation, apply once
+// ZOOM
 // ═══════════════════════════════════════════════════
 function setZoom(zoom) {
   currentZoom = zoom;
@@ -1986,27 +2112,28 @@ function centerToday() {
   const range = getProjectRange();
   const pxDay = getPxPerDay();
   const ganttBody = document.getElementById('gantt-body');
-  const x = Math.max(0, dateDiff(range.start, today()) * pxDay - ganttBody.offsetWidth / 2);
-  ganttBody.scrollLeft = x;
-  syncGanttHeaderScroll(x);
+  const x = dateDiff(range.start, today()) * pxDay - ganttBody.offsetWidth / 2;
+  ganttBody.scrollLeft = Math.max(0, x);
+  syncGanttHeaderScroll(ganttBody.scrollLeft);
 }
 
 function fitToView() {
-  // FIX: single-pass, pick correct zoom then apply once
   const range = getProjectRange();
+  const pxDay = getPxPerDay();
   const ganttBody = document.getElementById('gantt-body');
-  const availW = ganttBody.offsetWidth;
+  const totalW = dateDiff(range.start, range.end) * pxDay;
+  const scale = ganttBody.offsetWidth / totalW;
+  // pick zoom that fits
   const projectDays = dateDiff(range.start, range.end);
-  if (projectDays <= 0) return;
-
-  let bestZoom = 'years';
-  for (const z of ['days', 'weeks', 'months', 'years']) {
-    if (projectDays * ZOOM_CONFIG[z] <= availW * 1.1) {
-      bestZoom = z;
-      break;
-    }
-  }
-  setZoom(bestZoom);
+  const ganttW2 = ganttBody.offsetWidth;
+  if (projectDays * ZOOM_CONFIG.years <= ganttW2 * 1.5) setZoom('months');
+  else setZoom('years');
+  // re-evaluate with better granularity
+  const newPxDay = getPxPerDay();
+  if (projectDays * newPxDay < ganttW2 * 0.4) setZoom('days');
+  else if (projectDays * ZOOM_CONFIG.weeks <= ganttW2 * 1.2) setZoom('weeks');
+  else if (projectDays * ZOOM_CONFIG.months <= ganttW2 * 1.2) setZoom('months');
+  else setZoom('years');
   ganttBody.scrollLeft = 0;
   syncGanttHeaderScroll(0);
 }
@@ -2020,6 +2147,8 @@ function startRowDrag(e, taskId) {
   document.addEventListener('mouseup', onRowDragEnd);
   document.body.style.userSelect = 'none';
   document.body.style.cursor = 'grabbing';
+
+  // Mark the dragging row
   const row = document.querySelector(`.task-row[data-id="${taskId}"]`);
   if (row) row.classList.add('dragging-row');
 }
@@ -2028,20 +2157,43 @@ function onRowDragMove(e) {
   if (!dragState) return;
   if (Math.abs(e.clientY - dragState.startY) > 4) dragState.moved = true;
   if (!dragState.moved) return;
+
+  // Remove all existing indicators & highlights
   document.querySelectorAll('.drop-indicator').forEach(el => el.remove());
+  document.querySelectorAll('.drop-into').forEach(el => el.classList.remove('drop-into'));
+
   const rows = [...document.querySelectorAll('.task-row:not(.dragging-row)')];
   const target = rows.find(r => {
     const rect = r.getBoundingClientRect();
     return e.clientY >= rect.top && e.clientY <= rect.bottom;
   });
+
   if (target) {
     const rect = target.getBoundingClientRect();
-    const mid = rect.top + rect.height / 2;
-    const ind = document.createElement('div');
-    ind.className = 'drop-indicator ' + (e.clientY < mid ? 'top' : 'bottom');
-    target.appendChild(ind);
+    const relY  = e.clientY - rect.top;
+    const ratio = relY / rect.height;
+
+    // 3 zones : avant (0–25%), dans (25–75%), après (75–100%)
+    let position;
+    if (ratio < 0.25) {
+      position = 'before';
+    } else if (ratio > 0.75) {
+      position = 'after';
+    } else {
+      position = 'into';
+    }
+
+    if (position === 'into') {
+      target.classList.add('drop-into');
+    } else {
+      const ind = document.createElement('div');
+      ind.className = 'drop-indicator ' + position;
+      target.style.position = 'relative';
+      target.appendChild(ind);
+    }
+
     dragState.targetId = parseInt(target.dataset.id);
-    dragState.position = e.clientY < mid ? 'before' : 'after';
+    dragState.position = position;
   } else {
     dragState.targetId = null;
     dragState.position = null;
@@ -2054,9 +2206,10 @@ function onRowDragEnd(e) {
   document.body.style.userSelect = '';
   document.body.style.cursor = '';
   document.querySelectorAll('.drop-indicator').forEach(el => el.remove());
+  document.querySelectorAll('.drop-into').forEach(el => el.classList.remove('drop-into'));
   document.querySelectorAll('.dragging-row').forEach(el => el.classList.remove('dragging-row'));
+
   if (dragState && dragState.moved && dragState.targetId != null && dragState.targetId !== dragState.taskId) {
-    pushUndo();
     applyRowReorder(dragState.taskId, dragState.targetId, dragState.position);
   }
   dragState = null;
@@ -2066,14 +2219,110 @@ function applyRowReorder(srcId, tgtId, position) {
   const src = tasks.find(t => t.id === srcId);
   const tgt = tasks.find(t => t.id === tgtId);
   if (!src || !tgt) return;
+
+  // Prevent dropping a task onto one of its own descendants or itself
   if (getDescendants(srcId).includes(tgtId)) return;
-  src.parentId = tgt.parentId;
-  const siblings = tasks.filter(t => t.parentId === tgt.parentId && t.id !== srcId).sort((a,b) => a.order - b.order);
-  const tgtIndex = siblings.findIndex(t => t.id === tgtId);
-  const insertAt = position === 'before' ? tgtIndex : tgtIndex + 1;
-  siblings.splice(insertAt, 0, src);
-  siblings.forEach((t, i) => { t.order = i; });
+  if (srcId === tgtId) return;
+
+  if (position === 'into') {
+    // ── Nesting : la tâche devient enfant de la cible ──
+    // La cible devient automatiquement récapitulative si elle ne l'est pas
+    if (tgt.type !== 'summary') tgt.type = 'summary';
+    src.parentId = tgtId;
+    // Placer en dernière position parmi les enfants existants
+    const siblings = tasks.filter(t => t.parentId === tgtId && t.id !== srcId);
+    src.order = siblings.length;
+    // S'assurer que la cible est dépliée
+    tgt.collapsed = false;
+  } else {
+    // ── Réordonnancement (avant / après) ──
+    src.parentId = tgt.parentId;
+    const siblings = tasks
+      .filter(t => t.parentId === tgt.parentId && t.id !== srcId)
+      .sort((a, b) => a.order - b.order);
+    const tgtIndex = siblings.findIndex(t => t.id === tgtId);
+    const insertAt = position === 'before' ? tgtIndex : tgtIndex + 1;
+    siblings.splice(insertAt, 0, src);
+    siblings.forEach((t, i) => { t.order = i; });
+  }
+
   render();
+}
+
+// ═══════════════════════════════════════════════════
+// NEST MODAL — choisir le parent d'une tâche
+// ═══════════════════════════════════════════════════
+let nestingTaskId = null;
+
+function openNestModal(taskId) {
+  nestingTaskId = taskId;
+  const task = tasks.find(t => t.id === taskId);
+  if (!task) return;
+
+  const forbidden = new Set([taskId, ...getDescendants(taskId)]);
+  const list = document.getElementById('nest-list');
+  list.innerHTML = '';
+
+  // Option : niveau racine
+  const rootOpt = makeNestOption(null, '[ Niveau racine — aucun parent ]', task.parentId === null);
+  list.appendChild(rootOpt);
+
+  // Options : toutes les tâches sauf tâche elle-même et ses descendants
+  const visible = getVisibleRows();
+  for (const { task: t, level } of visible) {
+    if (forbidden.has(t.id)) continue;
+    const isCurrent = t.id === task.parentId;
+    const indent = '    '.repeat(level);
+    const typeIcon = t.type === 'summary' ? '📁 ' : getTaskType(t) === 'milestone' ? '◆ ' : '▬ ';
+    const label = indent + typeIcon + t.name;
+    list.appendChild(makeNestOption(t.id, label, isCurrent));
+  }
+
+  document.getElementById('nest-overlay').style.display = 'flex';
+}
+
+function makeNestOption(targetId, label, isCurrent) {
+  const opt = document.createElement('div');
+  opt.style.cssText = `padding:10px 12px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:10px;
+    border:1px solid ${isCurrent ? 'var(--accent)' : 'var(--border)'};
+    background:${isCurrent ? 'var(--accent-dim)' : 'transparent'};margin-bottom:6px;
+    font-size:13px;color:${isCurrent ? 'var(--accent)' : 'var(--text)'};
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;`;
+  opt.title = label.trim();
+  if (isCurrent) {
+    opt.innerHTML = `<span style="font-size:10px;color:var(--accent)">✓</span><span style="overflow:hidden;text-overflow:ellipsis">${label}</span>`;
+  } else {
+    opt.textContent = label;
+  }
+  opt.addEventListener('mouseenter', () => { if (!isCurrent) opt.style.background = 'var(--surface2)'; });
+  opt.addEventListener('mouseleave', () => { if (!isCurrent) opt.style.background = 'transparent'; });
+  opt.onclick = () => applyNest(nestingTaskId, targetId);
+  return opt;
+}
+
+function applyNest(srcId, newParentId) {
+  const src = tasks.find(t => t.id === srcId);
+  if (!src) return;
+  closeNestModal();
+
+  if (newParentId !== null) {
+    const newParent = tasks.find(t => t.id === newParentId);
+    if (!newParent) return;
+    if (getDescendants(srcId).includes(newParentId)) return; // sécurité
+    if (newParent.type !== 'summary') newParent.type = 'summary';
+    newParent.collapsed = false;
+  }
+
+  src.parentId = newParentId;
+  // Placer en dernière position dans le nouveau groupe
+  const siblings = tasks.filter(t => t.parentId === newParentId && t.id !== srcId);
+  src.order = siblings.length;
+  render();
+}
+
+function closeNestModal() {
+  document.getElementById('nest-overlay').style.display = 'none';
+  nestingTaskId = null;
 }
 
 // ═══════════════════════════════════════════════════
@@ -2082,13 +2331,14 @@ function applyRowReorder(srcId, tgtId, position) {
 function exportCSV() {
   const rows = getVisibleRows();
   const BOM = '\uFEFF';
-  const header = 'ID;NOM;TYPE;NIVEAU;ID_PARENT;DATE_DEBUT;DATE_FIN;DUREE_JOURS;AVANCEMENT;DESCRIPTION\r\n';
+  const header = 'ID;NOM;TYPE;NIVEAU;ID_PARENT;DATE_DEBUT;DATE_FIN;DUREE_JOURS;DESCRIPTION\r\n';
   let body = '';
+
   for (const { task, level } of rows) {
     const type = getTaskType(task).toUpperCase();
     const dur = type === 'MILESTONE' ? 0 : dateDiff(task.startDate, task.endDate) + 1;
     const desc = (task.description || '').replace(/"/g, '""');
-    const hasSpecial = desc.includes(';') || desc.includes('\n') || desc.includes('"');
+    const hasSpecialChars = desc.includes(';') || desc.includes('\n') || desc.includes('"');
     body += [
       task.id,
       `"${task.name.replace(/"/g, '""')}"`,
@@ -2098,83 +2348,367 @@ function exportCSV() {
       task.startDate,
       task.endDate,
       dur,
-      task.progress || 0,
-      hasSpecial ? `"${desc}"` : desc
+      hasSpecialChars ? `"${desc}"` : desc
     ].join(';') + '\r\n';
   }
-  const blob = new Blob([BOM + header + body], { type: 'text/csv;charset=utf-8' });
+
+  const csv = BOM + header + body;
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
   downloadFile(blob, getFileName('csv'));
 }
 
 // ═══════════════════════════════════════════════════
-// EXPORT SVG — uses unified buildTimelineHeaderSVG
+// EXPORT MARKDOWN
 // ═══════════════════════════════════════════════════
-function openExportSVGModal() { document.getElementById('export-modal-overlay').style.display = 'flex'; }
-function closeExportModal() { document.getElementById('export-modal-overlay').style.display = 'none'; }
+function exportMarkdown() {
+  recalcAllSummaries();
+  const rows = getVisibleRows();
+  const projectName = document.getElementById('project-name').value || 'Projet';
+  const now = new Date();
+  const exportDate = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()}`;
+
+  // ── En-tête ────────────────────────────────────────
+  let md = `# ${projectName}
+
+`;
+  md += `> **Planning exporté le** ${exportDate}
+
+`;
+
+  // ── 1. Tableau du planning ─────────────────────────
+  md += `## Planning
+
+`;
+  md += `| N° | Tâche | Type | Début | Fin | Durée |
+`;
+  md += `|:--:|-------|:----:|:-----:|:---:|:-----:|
+`;
+
+  let idx = 1;
+  for (const { task, level } of rows) {
+    const type = getTaskType(task);
+    const indent = '↳ '.repeat(level);
+    const name = escMD(task.name);
+
+    let typeLabel, typeEmoji;
+    if (type === 'summary')   { typeLabel = 'Récap.';   typeEmoji = '📁'; }
+    else if (type === 'milestone') { typeLabel = 'Jalon';    typeEmoji = '◆'; }
+    else                      { typeLabel = 'Tâche';    typeEmoji = '▬'; }
+
+    const start = formatDate(task.startDate);
+    const end   = type === 'milestone' ? '—' : formatDate(task.endDate);
+    const dur   = type === 'milestone' ? '—'
+                : `${dateDiff(task.startDate, task.endDate) + 1} j`;
+
+    const nameCell = type === 'summary'
+      ? `**${indent}${typeEmoji} ${name}**`
+      : `${indent}${typeEmoji} ${name}`;
+
+    md += `| ${idx++} | ${nameCell} | ${typeLabel} | ${start} | ${end} | ${dur} |
+`;
+  }
+
+  // ── 2. Diagramme Mermaid Gantt ─────────────────────
+  md += `
+## Diagramme Gantt
+
+`;
+  md += `> Ce diagramme est rendu automatiquement sur GitHub, GitLab, Notion, Obsidian et tout éditeur Markdown compatible Mermaid.
+
+`;
+  md += '```mermaid\n';
+  md += `gantt
+`;
+  md += `    title ${projectName}
+`;
+  md += `    dateFormat YYYY-MM-DD
+`;
+  md += `    todayMarker on
+
+`;
+
+  // Générer les sections Mermaid à partir des tâches récapitulatives
+  // (les tâches racines sans parent forment des sections)
+  let currentSection = null;
+
+  for (const { task, level } of rows) {
+    const type = getTaskType(task);
+
+    // Nouvelle section = tâche récapitulative de niveau 0
+    if (type === 'summary' && level === 0) {
+      currentSection = task.name;
+      md += `    section ${escMermaid(task.name)}
+`;
+      continue;
+    }
+
+    // Section par défaut si pas encore de section déclarée
+    if (currentSection === null && level === 0) {
+      currentSection = 'Tâches';
+      md += `    section Tâches
+`;
+    }
+
+    // Ignorer les tâches récapitulatives imbriquées (elles seraient des doublons visuels)
+    if (type === 'summary') continue;
+
+    const safeName = escMermaid(task.name);
+
+    if (type === 'milestone') {
+      // Mermaid milestone : durée 0d
+      md += `    ${safeName} : milestone, ${task.startDate}, 0d
+`;
+    } else {
+      // Calcul de la durée en jours pour Mermaid
+      const dur = dateDiff(task.startDate, task.endDate) + 1;
+      md += `    ${safeName} : ${task.startDate}, ${dur}d
+`;
+    }
+  }
+
+  md += '```\n';
+
+  // ── 3. Section Jalons ──────────────────────────────
+  const milestones = rows.filter(r => getTaskType(r.task) === 'milestone');
+  if (milestones.length > 0) {
+    md += `
+## Jalons
+
+`;
+    md += `| Jalon | Date |
+`;
+    md += `|-------|:----:|
+`;
+    for (const { task } of milestones) {
+      md += `| ◆ ${escMD(task.name)} | ${formatDate(task.startDate)} |
+`;
+    }
+    md += '\n';
+  }
+
+  // ── Pied de page ──────────────────────────────────
+  md += `
+---
+*Généré par GanttPro HTML — [github.com/Romube/gantt-html](https://github.com/Romube/gantt-html)*
+`;
+
+  const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+  downloadFile(blob, getFileName('md'));
+}
+
+function escMD(s) {
+  return (s || '').replace(/\|/g, '\|').replace(/\*/g, '\*').replace(/_/g, '\_');
+}
+
+function escMermaid(s) {
+  // Mermaid n'aime pas les deux-points, les virgules et certains caractères spéciaux
+  return (s || '')
+    .replace(/:/g, ' -')
+    .replace(/,/g, ' ')
+    .replace(/[#]/g, '')
+    .replace(/"/g, "'")
+    .trim();
+}
+
+// ═══════════════════════════════════════════════════
+// EXPORT SVG
+// ═══════════════════════════════════════════════════
+function openExportSVGModal() {
+  document.getElementById('export-modal-overlay').style.display = 'flex';
+}
+function closeExportModal() {
+  document.getElementById('export-modal-overlay').style.display = 'none';
+}
 
 function exportSVG() {
   closeExportModal();
-  const T = THEMES[currentTheme];
+  const T = THEMES[currentTheme]; // theme palette for SVG
   const scale = document.querySelector('input[name="svg-scale"]:checked').value;
   const period = document.querySelector('input[name="svg-period"]:checked').value;
+
   const scaleMap = { compact: 24, standard: 32, comfortable: 44 };
   const rowH = scaleMap[scale];
   const barH = Math.round(rowH * 0.55);
   const headerH = 52;
   const listW = 260;
+  const pxDay = getPxPerDay();
 
   recalcAllSummaries();
   const rows = getVisibleRows();
 
-  // FIX: compute full range first, THEN compute visible slice if needed
-  const fullRange = getProjectRange();
-  let range = fullRange;
+  let range = getProjectRange();
   if (period === 'visible') {
     const ganttBody = document.getElementById('gantt-body');
-    const pxDay0 = getPxPerDay();
     const sl = ganttBody.scrollLeft;
     const cw = ganttBody.offsetWidth;
     range = {
-      start: addDays(fullRange.start, Math.floor(sl / pxDay0)),
-      end: addDays(fullRange.start, Math.floor((sl + cw) / pxDay0))
+      start: addDays(range.start, Math.floor(sl / pxDay)),
+      end: addDays(range.start, Math.floor((sl + cw) / pxDay))
     };
   }
 
-  const pxDay = getPxPerDay();
   const totalDays = dateDiff(range.start, range.end) + 1;
   const ganttW = totalDays * pxDay;
   const totalW = listW + ganttW;
-  const totalH = headerH + rows.length * rowH + 40;
+  const totalH = headerH + rows.length * rowH + 40; // 40 = legend
+
+  const MONTHS_FR = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+  const MONTHS_FULL = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
 
   let svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="${totalH}" viewBox="0 0 ${totalW} ${totalH}" font-family="Arial,sans-serif">
-<defs><style>text { font-family: Arial, sans-serif; }</style></defs>
+<defs>
+  <style>
+    text { font-family: Arial, sans-serif; }
+  </style>
+</defs>
+<!-- Background -->
 <rect width="${totalW}" height="${totalH}" fill="${T.bg}"/>
+<!-- List panel background -->
 <rect width="${listW}" height="${totalH}" fill="${T.surface}"/>
+<!-- Border between list and gantt -->
 <line x1="${listW}" y1="0" x2="${listW}" y2="${totalH}" stroke="${T.border}" stroke-width="1"/>
+<!-- Header background -->
+<rect width="${totalW}" height="${headerH}" fill="${T.surface2}"/>
+<line x1="0" y1="${headerH}" x2="${totalW}" y2="${headerH}" stroke="${T.border}" stroke-width="1"/>
+
+<!-- Project name -->
 <text x="12" y="${headerH/2 + 5}" font-size="13" font-weight="bold" fill="${T.text}">${escSVG(document.getElementById('project-name').value)}</text>
 `;
 
-  // Timeline header — unified function (offsetX = listW)
-  svg += buildTimelineHeaderSVG({
-    range, totalDays, pxDay, headerH, offsetX: listW,
-    zoom: currentZoom, theme: currentTheme
-  });
+  // Header timeline — mirrors renderGanttHeader exactly for each zoom level
+  const rowMid = headerH / 2;
+  svg += `<line x1="${listW}" y1="${rowMid}" x2="${totalW}" y2="${rowMid}" stroke="${T.border}" stroke-width="1"/>`;
+
+  if (currentZoom === 'days') {
+    // Top: months (name + year)
+    let curMonth = -1, monthStartX = listW, curMonthYear = 0;
+    for (let i = 0; i <= totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      const m = d.getMonth(); const y = d.getFullYear();
+      if (m !== curMonth || i === totalDays) {
+        if (curMonth !== -1) {
+          const w = i * pxDay - (monthStartX - listW);
+          svg += `<text x="${monthStartX + w/2}" y="${rowMid/2 + 5}" text-anchor="middle" font-size="10" font-weight="bold" fill="${T.text}">${MONTHS_FULL[curMonth]} ${curMonthYear}</text>`;
+          svg += `<line x1="${listW + i * pxDay}" y1="0" x2="${listW + i * pxDay}" y2="${rowMid}" stroke="${T.border}" stroke-width="1"/>`;
+        }
+        curMonth = m; curMonthYear = y; monthStartX = listW + i * pxDay;
+      }
+    }
+    // Bottom: day numbers
+    for (let i = 0; i < totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      const x = listW + i * pxDay;
+      svg += `<line x1="${x}" y1="${rowMid}" x2="${x}" y2="${headerH}" stroke="${T.border}" stroke-width="0.5"/>`;
+      if (pxDay >= 14) svg += `<text x="${x + pxDay/2}" y="${rowMid + (headerH - rowMid)/2 + 4}" text-anchor="middle" font-size="9" fill="${T.text2}">${d.getDate()}</text>`;
+    }
+
+  } else if (currentZoom === 'weeks') {
+    // Top: months (name + year)
+    let curMonth = -1, monthStartX = listW, curMonthYear = 0;
+    for (let i = 0; i <= totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      const m = d.getMonth(); const y = d.getFullYear();
+      if (m !== curMonth || i === totalDays) {
+        if (curMonth !== -1) {
+          const w = i * pxDay - (monthStartX - listW);
+          svg += `<text x="${monthStartX + w/2}" y="${rowMid/2 + 5}" text-anchor="middle" font-size="10" font-weight="bold" fill="${T.text}">${MONTHS_FULL[curMonth]} ${curMonthYear}</text>`;
+          svg += `<line x1="${listW + i * pxDay}" y1="0" x2="${listW + i * pxDay}" y2="${rowMid}" stroke="${T.border}" stroke-width="1"/>`;
+        }
+        curMonth = m; curMonthYear = y; monthStartX = listW + i * pxDay;
+      }
+    }
+    // Bottom: ISO week numbers
+    for (let i = 0; i < totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      if (d.getDay() === 1) {
+        const x = listW + i * pxDay;
+        svg += `<line x1="${x}" y1="${rowMid}" x2="${x}" y2="${headerH}" stroke="${T.border}" stroke-width="1"/>`;
+        svg += `<text x="${x + 2}" y="${rowMid + (headerH - rowMid)/2 + 4}" font-size="9" fill="${T.text2}">S${getISOWeek(d)}</text>`;
+      }
+    }
+
+  } else if (currentZoom === 'months') {
+    // Top: years
+    let curYear = -1, yearStartX = listW;
+    for (let i = 0; i <= totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      const y = d.getFullYear();
+      if (y !== curYear || i === totalDays) {
+        if (curYear !== -1) {
+          const w = i * pxDay - (yearStartX - listW);
+          svg += `<text x="${yearStartX + w/2}" y="${rowMid/2 + 5}" text-anchor="middle" font-size="11" font-weight="bold" fill="${T.text}">${curYear}</text>`;
+          svg += `<line x1="${listW + i * pxDay}" y1="0" x2="${listW + i * pxDay}" y2="${rowMid}" stroke="${T.border}" stroke-width="1"/>`;
+        }
+        curYear = y; yearStartX = listW + i * pxDay;
+      }
+    }
+    // Bottom: month abbreviations
+    let curMonth2 = -1, monthStartX2 = listW;
+    for (let i = 0; i <= totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      const m = d.getMonth();
+      if (m !== curMonth2 || i === totalDays) {
+        if (curMonth2 !== -1) {
+          const w = i * pxDay - (monthStartX2 - listW);
+          svg += `<text x="${monthStartX2 + w/2}" y="${rowMid + (headerH - rowMid)/2 + 4}" text-anchor="middle" font-size="9" fill="${T.text2}">${MONTHS_FR[curMonth2]}</text>`;
+          svg += `<line x1="${listW + i * pxDay}" y1="${rowMid}" x2="${listW + i * pxDay}" y2="${headerH}" stroke="${T.border}" stroke-width="1"/>`;
+        }
+        curMonth2 = m; monthStartX2 = listW + i * pxDay;
+      }
+    }
+
+  } else { // years
+    // Top: years
+    let curYear = -1, yearStartX = listW;
+    for (let i = 0; i <= totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      const y = d.getFullYear();
+      if (y !== curYear || i === totalDays) {
+        if (curYear !== -1) {
+          const w = i * pxDay - (yearStartX - listW);
+          svg += `<text x="${yearStartX + w/2}" y="${rowMid/2 + 5}" text-anchor="middle" font-size="12" font-weight="bold" fill="${T.text}">${curYear}</text>`;
+          svg += `<line x1="${listW + i * pxDay}" y1="0" x2="${listW + i * pxDay}" y2="${rowMid}" stroke="${T.border}" stroke-width="1.5"/>`;
+        }
+        curYear = y; yearStartX = listW + i * pxDay;
+      }
+    }
+    // Bottom: quarters T1–T4
+    const QUARTERS = ['T1','T2','T3','T4'];
+    let prevQ = -1, prevYr = -1, qStartX = listW;
+    for (let i = 0; i <= totalDays; i++) {
+      const d = parseDate(addDays(range.start, i));
+      const q = Math.floor(d.getMonth() / 3);
+      const y = d.getFullYear();
+      if (q !== prevQ || y !== prevYr || i === totalDays) {
+        if (prevQ !== -1) {
+          const w = listW + i * pxDay - qStartX;
+          if (w > 16) svg += `<text x="${qStartX + w/2}" y="${rowMid + (headerH - rowMid)/2 + 4}" text-anchor="middle" font-size="10" font-weight="500" fill="${T.accent}">${QUARTERS[prevQ]}</text>`;
+          svg += `<line x1="${listW + i * pxDay}" y1="${rowMid}" x2="${listW + i * pxDay}" y2="${headerH}" stroke="${T.border}" stroke-width="1"/>`;
+        }
+        prevQ = q; prevYr = y; qStartX = listW + i * pxDay;
+      }
+    }
+  }
 
   // Row data
   rows.forEach(({ task, level }, i) => {
     const y = headerH + i * rowH;
     const type = getTaskType(task);
+
+    // Row background
     const rowFill = type === 'summary' ? T.rowSum : i % 2 === 0 ? T.rowEven : T.rowOdd;
     svg += `<rect x="0" y="${y}" width="${totalW}" height="${rowH}" fill="${rowFill}"/>`;
     svg += `<line x1="0" y1="${y + rowH}" x2="${totalW}" y2="${y + rowH}" stroke="${T.border}" stroke-width="0.5"/>`;
 
+    // List: task name with indentation
     const indent = 8 + level * 16;
     const textY = y + rowH/2 + 4;
 
+    // Type icon
     if (type === 'milestone') {
       const dx = indent + 6, dy = y + rowH/2;
-      svg += `<rect x="${dx-5}" y="${dy-5}" width="10" height="10" fill="#F0A500" transform="rotate(45 ${dx} ${dy})"/>`;
+      svg += `<rect x="${dx - 5}" y="${dy - 5}" width="10" height="10" fill="#F0A500" transform="rotate(45 ${dx} ${dy})"/>`;
     } else if (type === 'summary') {
       svg += `<rect x="${indent}" y="${y + rowH/2 - 5}" width="${Math.min(50, listW - indent - 20)}" height="8" rx="2" fill="#8B5CF6" opacity="0.6"/>`;
     } else {
@@ -2184,11 +2718,36 @@ function exportSVG() {
     const textColor = type === 'summary' ? (currentTheme==='dark'?'#BC8CFF':'#8250DF') : type === 'milestone' ? (currentTheme==='dark'?'#F0A500':'#BF8700') : T.text;
     const fontW = type === 'summary' ? 'bold' : 'normal';
     const nameX = indent + 14;
+    const maxNameW = listW - nameX - 8;
+    svg += `<text x="${nameX}" y="${textY}" font-size="${Math.max(9, rowH * 0.35)}" font-weight="${fontW}" fill="${textColor}" clip-path="none">`;
     const nameStr = escSVG(task.name);
-    svg += `<text x="${nameX}" y="${textY}" font-size="${Math.max(9, rowH * 0.35)}" font-weight="${fontW}" fill="${textColor}">${nameStr.length > 28 ? nameStr.substring(0,26)+'…' : nameStr}</text>`;
+    svg += `<tspan>${nameStr.length > 28 ? nameStr.substring(0,26) + '…' : nameStr}</tspan></text>`;
+
+    // Grid vertical lines
+    if (currentZoom === 'days') {
+      for (let j = 0; j < totalDays; j++) {
+        const d = parseDate(addDays(range.start, j));
+        if (d.getDay() === 1) {
+          svg += `<line x1="${listW + j * pxDay}" y1="${y}" x2="${listW + j * pxDay}" y2="${y + rowH}" stroke="${T.border}" stroke-width="0.5"/>`;
+        }
+      }
+    } else if (currentZoom === 'years') {
+      let prevQ = -1, prevYr = -1;
+      for (let j = 0; j < totalDays; j++) {
+        const d = parseDate(addDays(range.start, j));
+        const q = Math.floor(d.getMonth() / 3);
+        const yr = d.getFullYear();
+        if (q !== prevQ || yr !== prevYr) {
+          const op = q === 0 ? '0.6' : '0.25';
+          svg += `<line x1="${listW + j * pxDay}" y1="${y}" x2="${listW + j * pxDay}" y2="${y + rowH}" stroke="${T.border}" stroke-width="0.8" opacity="${op}"/>`;
+          prevQ = q; prevYr = yr;
+        }
+      }
+    }
 
     if (!task.startDate || !task.endDate) return;
-    if (task.endDate < range.start || task.startDate > range.end) return;
+    if (task.startDate < range.start && task.endDate < range.start) return;
+    if (task.startDate > range.end) return;
 
     const clampedStart = maxDate(task.startDate, range.start);
     const barX = listW + dateDiff(range.start, clampedStart) * pxDay;
@@ -2197,24 +2756,23 @@ function exportSVG() {
       const mx = listW + dateDiff(range.start, task.startDate) * pxDay;
       const size = Math.max(8, barH * 0.7);
       const my = y + rowH/2;
-      svg += `<rect x="${mx-size/2}" y="${my-size/2}" width="${size}" height="${size}" fill="#F0A500" stroke="#FBBF24" stroke-width="1.5" transform="rotate(45 ${mx} ${my})"/>`;
-      svg += `<text x="${mx+size/2+4}" y="${my+4}" font-size="${Math.max(8,rowH*0.32)}" fill="#F0A500">${escSVG(task.name)}</text>`;
+      svg += `<rect x="${mx - size/2}" y="${my - size/2}" width="${size}" height="${size}" fill="#F0A500" stroke="#FBBF24" stroke-width="1.5" transform="rotate(45 ${mx} ${my})"/>`;
+      svg += `<text x="${mx + size/2 + 4}" y="${my + 4}" font-size="${Math.max(8, rowH * 0.32)}" fill="#F0A500">${escSVG(task.name)}</text>`;
     } else {
       const clampedEnd = minDate(task.endDate, range.end);
       const dur = dateDiff(clampedStart, clampedEnd) + 1;
       const w = Math.max(4, dur * pxDay - 2);
       const bY = y + (rowH - barH) / 2;
+
       if (type === 'summary') {
-        svg += `<rect x="${barX}" y="${bY+2}" width="${w}" height="${barH-4}" rx="2" fill="#8B5CF6"/>`;
-        svg += `<polygon points="${barX},${bY+barH+2} ${barX+6},${bY+barH-4} ${barX-6},${bY+barH-4}" fill="#8B5CF6"/>`;
-        svg += `<polygon points="${barX+w},${bY+barH+2} ${barX+w+6},${bY+barH-4} ${barX+w-6},${bY+barH-4}" fill="#8B5CF6"/>`;
+        svg += `<rect x="${barX}" y="${bY + 2}" width="${w}" height="${barH - 4}" rx="2" fill="#8B5CF6"/>`;
+        svg += `<polygon points="${barX},${bY + barH + 2} ${barX + 6},${bY + barH - 4} ${barX - 6},${bY + barH - 4}" fill="#8B5CF6"/>`;
+        svg += `<polygon points="${barX + w},${bY + barH + 2} ${barX + w + 6},${bY + barH - 4} ${barX + w - 6},${bY + barH - 4}" fill="#8B5CF6"/>`;
       } else {
         svg += `<rect x="${barX}" y="${bY}" width="${w}" height="${barH}" rx="3" fill="#3B82F6"/>`;
-        const progress = task.progress || 0;
-        if (progress > 0) svg += `<rect x="${barX}" y="${bY}" width="${w * progress / 100}" height="${barH}" rx="3" fill="rgba(255,255,255,0.22)"/>`;
         if (w > 40) {
           const lbl = escSVG(task.name);
-          svg += `<text x="${barX+5}" y="${bY+barH/2+4}" font-size="${Math.max(8,barH*0.55)}" fill="white" opacity="0.9">${lbl.length > Math.floor(w/6) ? lbl.substring(0,Math.floor(w/6))+'…' : lbl}</text>`;
+          svg += `<text x="${barX + 5}" y="${bY + barH/2 + 4}" font-size="${Math.max(8, barH * 0.55)}" fill="white" opacity="0.9">${lbl.length > Math.floor(w/6) ? lbl.substring(0, Math.floor(w/6)) + '…' : lbl}</text>`;
         }
       }
     }
@@ -2223,41 +2781,50 @@ function exportSVG() {
   // Today line
   if (today() >= range.start && today() <= range.end) {
     const tx = listW + dateDiff(range.start, today()) * pxDay;
-    svg += `<line x1="${tx}" y1="${headerH}" x2="${tx}" y2="${totalH-40}" stroke="${T.today}" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.8"/>`;
+    svg += `<line x1="${tx}" y1="${headerH}" x2="${tx}" y2="${totalH - 40}" stroke="#FF6B6B" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.8"/>`;
   }
 
   // Legend
   const legendY = totalH - 36;
   svg += `<rect x="0" y="${legendY}" width="${totalW}" height="36" fill="${T.legendBg}"/>`;
   svg += `<line x1="0" y1="${legendY}" x2="${totalW}" y2="${legendY}" stroke="${T.border}" stroke-width="1"/>`;
-  svg += `<rect x="12" y="${legendY+12}" width="20" height="10" rx="2" fill="#3B82F6"/>`;
-  svg += `<text x="38" y="${legendY+21}" font-size="10" fill="${T.text2}">Tâche standard</text>`;
-  svg += `<rect x="140" y="${legendY+10}" width="12" height="12" fill="${currentTheme==='dark'?'#8B5CF6':'#8250DF'}"/>`;
-  svg += `<text x="160" y="${legendY+21}" font-size="10" fill="${T.text2}">Tâche récapitulative</text>`;
+  svg += `<rect x="12" y="${legendY + 12}" width="20" height="10" rx="2" fill="#3B82F6"/>`;
+  svg += `<text x="38" y="${legendY + 21}" font-size="10" fill="${T.text2}">Tâche standard</text>`;
+  svg += `<rect x="140" y="${legendY + 10}" width="12" height="12" fill="${currentTheme==='dark'?'#8B5CF6':'#8250DF'}" transform="rotate(0 146 ${legendY + 16})"/>`;
+  svg += `<text x="160" y="${legendY + 21}" font-size="10" fill="${T.text2}">Tâche récapitulative</text>`;
   const mx = 300, my = legendY + 16;
-  svg += `<rect x="${mx-6}" y="${my-6}" width="12" height="12" fill="#F0A500" transform="rotate(45 ${mx} ${my})"/>`;
-  svg += `<text x="${mx+10}" y="${legendY+21}" font-size="10" fill="${T.text2}">Jalon</text>`;
-  svg += `<line x1="${mx+55}" y1="${legendY+10}" x2="${mx+55}" y2="${legendY+26}" stroke="${T.today}" stroke-width="1.5" stroke-dasharray="3,2"/>`;
-  svg += `<text x="${mx+62}" y="${legendY+21}" font-size="10" fill="${T.text2}">Aujourd'hui</text>`;
+  svg += `<rect x="${mx - 6}" y="${my - 6}" width="12" height="12" fill="#F0A500" transform="rotate(45 ${mx} ${my})"/>`;
+  svg += `<text x="${mx + 10}" y="${legendY + 21}" font-size="10" fill="${T.text2}">Jalon</text>`;
+  svg += `<line x1="${mx + 55}" y1="${legendY + 10}" x2="${mx + 55}" y2="${legendY + 26}" stroke="${T.today}" stroke-width="1.5" stroke-dasharray="3,2"/>`;
+  svg += `<text x="${mx + 62}" y="${legendY + 21}" font-size="10" fill="${T.text2}">Aujourd'hui</text>`;
+
   svg += `\n</svg>`;
 
-  downloadFile(new Blob([svg], { type: 'image/svg+xml;charset=utf-8' }), getFileName('svg'));
+  const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+  downloadFile(blob, getFileName('svg'));
 }
 
 function escSVG(s) {
-  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ═══════════════════════════════════════════════════
 // SAVE / LOAD
 // ═══════════════════════════════════════════════════
 function saveProject() {
-  const data = { version: 2, name: document.getElementById('project-name').value, nextId, tasks };
-  downloadFile(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }), getFileName('json'));
+  const data = {
+    version: 1,
+    name: document.getElementById('project-name').value,
+    nextId, tasks
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  downloadFile(blob, getFileName('json'));
   showSaveIndicator('Projet sauvegardé ✓');
 }
 
-function loadProject() { document.getElementById('file-input').click(); }
+function loadProject() {
+  document.getElementById('file-input').click();
+}
 
 function onFileLoad(e) {
   const file = e.target.files[0];
@@ -2267,21 +2834,22 @@ function onFileLoad(e) {
     try {
       const data = JSON.parse(ev.target.result);
       if (!data.tasks) throw new Error('Format invalide');
-      pushUndo();
       tasks = data.tasks;
       nextId = data.nextId || (Math.max(0, ...tasks.map(t => t.id)) + 1);
       document.getElementById('project-name').value = data.name || 'Projet chargé';
       selectedTaskId = null;
       render();
       showSaveIndicator('Projet chargé ✓');
-    } catch(err) { alert('Erreur lors du chargement : ' + err.message); }
+    } catch(err) {
+      alert('Erreur lors du chargement : ' + err.message);
+    }
   };
   reader.readAsText(file);
   e.target.value = '';
 }
 
 function saveToLocalStorage() {
-  const data = { version: 2, name: document.getElementById('project-name').value, nextId, tasks };
+  const data = { version: 1, name: document.getElementById('project-name').value, nextId, tasks };
   localStorage.setItem('ganttPro_project', JSON.stringify(data));
 }
 
@@ -2322,35 +2890,11 @@ function downloadFile(blob, filename) {
 // KEYBOARD SHORTCUTS
 // ═══════════════════════════════════════════════════
 document.addEventListener('keydown', (e) => {
-  const inInput = e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA';
-
-  // Undo / Redo — always available
-  if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); return; }
-  if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); return; }
-
-  if (inInput) return;
-
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
   if (e.key === 'Escape') { closeModal(); closeConfirm(); closeExportModal(); }
   if (e.key === 'n' && !e.ctrlKey) openModal('standard');
   if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveProject(); }
-
-  // Navigation clavier dans la liste
-  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-    e.preventDefault();
-    const rows = getVisibleRows();
-    if (!rows.length) return;
-    const currentIndex = rows.findIndex(r => r.task.id === selectedTaskId);
-    let newIndex = e.key === 'ArrowUp' ? Math.max(0, currentIndex - 1) : Math.min(rows.length - 1, currentIndex + 1);
-    if (currentIndex === -1) newIndex = 0;
-    selectedTaskId = rows[newIndex].task.id;
-    renderTaskList();
-    const rowEl = document.querySelector(`.task-row[data-id="${selectedTaskId}"]`);
-    if (rowEl) rowEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-  }
-  if (e.key === 'Enter' && selectedTaskId) { openModal(null, selectedTaskId); }
-  if ((e.key === 'Delete' || e.key === 'Backspace') && selectedTaskId) { confirmDelete(selectedTaskId); }
 });
-
 document.getElementById('modal-body').addEventListener('keydown', (e) => {
   if (e.key === 'Enter' && !e.shiftKey && e.target.tagName !== 'TEXTAREA') { e.preventDefault(); saveTask(); }
 });
@@ -2362,23 +2906,26 @@ function loadDemoData() {
   const base = today();
   const t = (d) => addDays(base, d);
   tasks = [
-    { id:1,  name:'Phase 1 — Conception',          description:'Phase de conception du système',                     startDate:t(-5),  endDate:t(14), type:'summary',  parentId:null, order:0, collapsed:false, progress:0  },
-    { id:2,  name:'Analyse des besoins',            description:'Recueil et analyse des besoins utilisateurs',        startDate:t(-5),  endDate:t(3),  type:'standard', parentId:1,    order:0, collapsed:false, progress:100},
-    { id:3,  name:'Spécification fonctionnelle',    description:'Rédaction de la spécification fonctionnelle',        startDate:t(0),   endDate:t(7),  type:'standard', parentId:1,    order:1, collapsed:false, progress:60 },
-    { id:4,  name:'Validation spécification',       description:'',                                                   startDate:t(7),   endDate:t(7),  type:'milestone',parentId:1,    order:2, collapsed:false, progress:0  },
-    { id:5,  name:'Architecture technique',         description:'Conception de l\'architecture logicielle',           startDate:t(5),   endDate:t(14), type:'standard', parentId:1,    order:3, collapsed:false, progress:30 },
-    { id:6,  name:'Phase 2 — Développement',        description:'',                                                   startDate:t(14),  endDate:t(55), type:'summary',  parentId:null, order:1, collapsed:false, progress:0  },
-    { id:7,  name:'Backend — API REST',             description:'Développement des endpoints API',                    startDate:t(14),  endDate:t(35), type:'standard', parentId:6,    order:0, collapsed:false, progress:0  },
-    { id:8,  name:'Frontend — Interface',           description:'Développement de l\'interface utilisateur',          startDate:t(21),  endDate:t(45), type:'standard', parentId:6,    order:1, collapsed:false, progress:0  },
-    { id:9,  name:'Intégration',                    description:'Intégration backend/frontend',                       startDate:t(42),  endDate:t(55), type:'standard', parentId:6,    order:2, collapsed:false, progress:0  },
-    { id:10, name:'Livraison développement',        description:'',                                                   startDate:t(55),  endDate:t(55), type:'milestone',parentId:6,    order:3, collapsed:false, progress:0  },
-    { id:11, name:'Phase 3 — Tests & Recette',      description:'',                                                   startDate:t(55),  endDate:t(80), type:'summary',  parentId:null, order:2, collapsed:false, progress:0  },
-    { id:12, name:'Tests unitaires et intégration', description:'',                                                   startDate:t(55),  endDate:t(65), type:'standard', parentId:11,   order:0, collapsed:false, progress:0  },
-    { id:13, name:'Tests d\'acceptation (UAT)',     description:'',                                                   startDate:t(62),  endDate:t(75), type:'standard', parentId:11,   order:1, collapsed:false, progress:0  },
-    { id:14, name:'Recette validée',                description:'',                                                   startDate:t(75),  endDate:t(75), type:'milestone',parentId:11,   order:2, collapsed:false, progress:0  },
-    { id:15, name:'Corrections et ajustements',     description:'',                                                   startDate:t(72),  endDate:t(80), type:'standard', parentId:11,   order:3, collapsed:false, progress:0  },
-    { id:16, name:'Mise en production',             description:'',                                                   startDate:t(80),  endDate:t(80), type:'milestone',parentId:null, order:3, collapsed:false, progress:0  },
-    { id:17, name:'Formation utilisateurs',         description:'',                                                   startDate:t(78),  endDate:t(85), type:'standard', parentId:null, order:4, collapsed:false, progress:0  },
+    { id:1, name:'Phase 1 — Conception', description:'Phase de conception du système', startDate:t(-5), endDate:t(14), type:'summary', parentId:null, order:0, collapsed:false },
+    { id:2, name:'Analyse des besoins', description:'Recueil et analyse des besoins utilisateurs', startDate:t(-5), endDate:t(3), type:'standard', parentId:1, order:0, collapsed:false },
+    { id:3, name:'Spécification fonctionnelle', description:'Rédaction de la spécification fonctionnelle détaillée', startDate:t(0), endDate:t(7), type:'standard', parentId:1, order:1, collapsed:false },
+    { id:4, name:'Validation spécification', description:'', startDate:t(7), endDate:t(7), type:'milestone', parentId:1, order:2, collapsed:false },
+    { id:5, name:'Architecture technique', description:'Conception de l\'architecture logicielle', startDate:t(5), endDate:t(14), type:'standard', parentId:1, order:3, collapsed:false },
+
+    { id:6, name:'Phase 2 — Développement', description:'', startDate:t(14), endDate:t(55), type:'summary', parentId:null, order:1, collapsed:false },
+    { id:7, name:'Backend — API REST', description:'Développement des endpoints API', startDate:t(14), endDate:t(35), type:'standard', parentId:6, order:0, collapsed:false },
+    { id:8, name:'Frontend — Interface', description:'Développement de l\'interface utilisateur', startDate:t(21), endDate:t(45), type:'standard', parentId:6, order:1, collapsed:false },
+    { id:9, name:'Intégration', description:'Intégration backend/frontend', startDate:t(42), endDate:t(55), type:'standard', parentId:6, order:2, collapsed:false },
+    { id:10, name:'Livraison développement', description:'', startDate:t(55), endDate:t(55), type:'milestone', parentId:6, order:3, collapsed:false },
+
+    { id:11, name:'Phase 3 — Tests & Recette', description:'', startDate:t(55), endDate:t(80), type:'summary', parentId:null, order:2, collapsed:false },
+    { id:12, name:'Tests unitaires et intégration', description:'', startDate:t(55), endDate:t(65), type:'standard', parentId:11, order:0, collapsed:false },
+    { id:13, name:'Tests d\'acceptation (UAT)', description:'', startDate:t(62), endDate:t(75), type:'standard', parentId:11, order:1, collapsed:false },
+    { id:14, name:'Recette validée', description:'', startDate:t(75), endDate:t(75), type:'milestone', parentId:11, order:2, collapsed:false },
+    { id:15, name:'Corrections et ajustements', description:'', startDate:t(72), endDate:t(80), type:'standard', parentId:11, order:3, collapsed:false },
+
+    { id:16, name:'Mise en production', description:'', startDate:t(80), endDate:t(80), type:'milestone', parentId:null, order:3, collapsed:false },
+    { id:17, name:'Formation utilisateurs', description:'', startDate:t(78), endDate:t(85), type:'standard', parentId:null, order:4, collapsed:false },
   ];
   nextId = 18;
 }
@@ -2389,8 +2936,9 @@ function loadDemoData() {
 (function init() {
   const loaded = loadFromLocalStorage();
   if (!loaded) loadDemoData();
-  updateUndoRedoBtns();
   render();
+
+  // Scroll to today on start
   setTimeout(() => {
     const range = getProjectRange();
     const pxDay = getPxPerDay();
