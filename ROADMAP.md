@@ -13,7 +13,7 @@ Le manque le plus urgent : aucune historisation aujourd'hui, chaque édition d'u
 - [x] `git init` à la racine (branche `master`)
 - [x] Premier commit de l'existant (`0a81ff5`, 2026-07-24) — `ganttPro.html`, `README.md`, `CLAUDE.md`, `TODO.md`, `ROADMAP.md`, `.gitignore`, `.docx`
 - [x] `.docx` versionné en binaire ; `.claude/settings.local.json` exclu via `.gitignore`
-- [ ] (Optionnel) Pousser vers le dépôt `github.com/Romube/gantt-html` déjà cité dans le README
+- [x] Poussé vers `github.com/Romube/gantt-html` (2026-07-24). Le dépôt distant avait déjà l'historique réel (6 commits) + le fichier `ganttPro.html` ; le travail local a été replanté sur `origin/main` (pas de `git init` orphelin conservé) et poussé en fast-forward via deux commits : `2efd20f` (code) et `b94b2cf` (docs). Branche `main` suit `origin/main`.
 
 ## 2. Check de syntaxe JS reproductible — `[ ]`
 
