@@ -11,12 +11,12 @@ Issu de la revue de code du 2026-07-22 (agent code-reviewer). Triés du plus au 
 
 - [ ] **Recherche + nœud replié masque le résultat trouvé** — `getVisibleRows()` (l.1169) : le compteur de résultats est correct mais une sous-tâche correspondante reste invisible si son ancêtre récapitulatif est replié.
 - [ ] **Le raccourci clavier « n » écrase une édition en cours** — l.2926, aucune vérification qu'un modal d'édition est déjà ouvert avant de rappeler `openModal('standard')`.
-- [ ] **`escMD()` est un no-op** — l.2530-2532, les regex utilisent `'\|'`/`'\*'`/`'\_'` au lieu de `'\\|'`/`'\\*'`/`'\\_'` ; un `|` dans un nom de tâche casse le tableau à l'export Markdown.
+- [x] **`escMD()` est un no-op** — corrigé (2026-07-24) : chaînes de remplacement passées à `'\\|'`/`'\\*'`/`'\\_'`. Bug détecté par ESLint (`no-useless-escape`).
 
 ## Sévérité faible à faible-moyenne
 
 - [ ] **Échap ne ferme pas le modal « Nester la tâche dans… »** — l.2925, `closeNestModal()` oubliée dans le handler Échap.
-- [ ] **Variable globale implicite `curMonthYear`** — branche `days` de `renderGanttHeader()` (l.1615-1626), non déclarée avec `let`/`const` contrairement aux autres branches.
+- [x] **Variable globale implicite `curMonthYear`** — corrigé (2026-07-24) : ajoutée à la déclaration `let` de la branche `days` de `renderGanttHeader()` (l.1615), comme dans les autres branches. Bug détecté par ESLint (`no-undef`).
 - [ ] **Tâche récapitulative orpheline jamais rétrogradée** — `recalcSummary()` (l.1125-1132) ne réagit pas quand la dernière sous-tâche est supprimée/déplacée ; la tâche garde son type `summary` et ses dates figées.
 
 ## Qualité / performance

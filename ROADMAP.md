@@ -23,7 +23,7 @@ Une erreur JS ne se voyait qu'à l'ouverture dans le navigateur ; désormais deu
 - [x] ESLint minimal (`npm run lint`) : `package.json` + `eslint.config.js` (flat config, globales navigateur) + `eslint-plugin-html` pour linter le `<script>` inline avec numéros de ligne recalés. `node_modules/` gitignoré. Dès sa mise en place, a attrapé les deux bugs connus : globale implicite `curMonthYear` (l.1623/1626) et `escMD()` cassé (`no-useless-escape`, l.2531).
 - [x] Documenté dans `CLAUDE.md` (section Commandes)
 
-> `npm run lint` est volontairement rouge tant que les bugs `curMonthYear` et `escMD` (TODO.md) ne sont pas corrigés — ce ne sont pas des faux positifs.
+> `npm run lint` est passé au **vert** le 2026-07-24 après correction des deux bugs qu'il avait révélés (`curMonthYear`, `escMD` — voir TODO.md).
 
 ## 3. Découpage du fichier — `[ ]` — **décision à valider par l'utilisateur**
 

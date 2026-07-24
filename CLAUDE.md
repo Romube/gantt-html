@@ -25,7 +25,7 @@ Prérequis outillage : `npm install` (installe ESLint et ses plugins en devDepen
 - **Linter (bugs de logique)** : `npm run lint` (= `eslint ganttPro.html`). ESLint lit le `<script>` inline via `eslint-plugin-html` (numéros de ligne recalés sur le HTML). Attrape les globales implicites (`no-undef`), échappements inutiles (`no-useless-escape`), clés dupliquées, code injoignable, etc. `no-unused-vars` est désactivé car la plupart des fonctions sont appelées via `onclick=`/`oninput=` dans le HTML. **À lancer après toute modification du JS.**
 - **Pas de tests automatisés** : toute vérification de *comportement* se fait manuellement dans le navigateur (charger l'app, interagir avec les tâches/le Gantt, vérifier le rendu, les exports, le localStorage).
 
-> Note : `npm run lint` est actuellement **rouge** — il signale deux bugs produit réels déjà connus (globale implicite `curMonthYear` et `escMD()` cassé, cf. `TODO.md`), pas des faux positifs. Il repassera au vert une fois ces bugs corrigés.
+> Note : `npm run lint` doit rester **vert**. S'il devient rouge, il a détecté un vrai problème (globale implicite, échappement inutile, etc.) — corriger, pas ignorer.
 
 ## Architecture
 

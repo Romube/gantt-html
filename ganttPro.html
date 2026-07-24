@@ -1612,7 +1612,7 @@ function renderGanttHeader(range, totalW, pxDay) {
 
   if (currentZoom === 'days') {
     // Top: months
-    let curMonth = -1, monthStart = 0;
+    let curMonth = -1, monthStart = 0, curMonthYear = 0;
     for (let i = 0; i <= totalDays; i++) {
       const d = parseDate(addDays(range.start, i));
       const m = d.getMonth(); const y = d.getFullYear();
@@ -2528,7 +2528,7 @@ function exportMarkdown() {
 }
 
 function escMD(s) {
-  return (s || '').replace(/\|/g, '\|').replace(/\*/g, '\*').replace(/_/g, '\_');
+  return (s || '').replace(/\|/g, '\\|').replace(/\*/g, '\\*').replace(/_/g, '\\_');
 }
 
 function escMermaid(s) {
