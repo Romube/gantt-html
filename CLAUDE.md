@@ -12,15 +12,15 @@ GanttPro est une application de planification de projet (diagramme de Gantt inte
 - `TODO.md` — liste de bugs/améliorations issus d'une revue de code passée (voir « Bugs connus » ci-dessous)
 - `ROADMAP.md` — chantier en cours d'amélioration du workflow de développement (git, check JS, découpage du fichier, tests) ; consulter ce fichier pour l'état d'avancement avant de reprendre ce travail
 
-Ce n'est pas un dépôt git initialisé actuellement.
+Le projet est versionné avec git ; la branche `main` suit `origin/main` (`github.com/Romube/gantt-html`).
 
 ## Commandes
 
 Il n'y a ni `package.json`, ni build, ni linter, ni suite de tests automatisée. Le workflow de développement consiste à éditer `ganttPro.html` directement puis à valider manuellement dans le navigateur.
 
 - **Ouvrir l'app** : ouvrir `ganttPro.html` directement dans un navigateur (double-clic, ou `start ganttPro.html` sous Windows/PowerShell). Aucun serveur requis.
-- **Vérifier la syntaxe JS après édition** : le fichier n'a pas de build step, donc les erreurs JS ne se révèlent qu'à l'exécution dans le navigateur. Pour un check rapide sans navigateur, extraire le contenu du `<script>` (entre les balises `<script>`/`</script>` en fin de fichier) dans un `.js` temporaire et lancer `node --check fichier.js`.
-- **Pas de tests automatisés** : toute vérification de comportement se fait manuellement dans le navigateur (charger l'app, interagir avec les tâches/le Gantt, vérifier le rendu, les exports, le localStorage).
+- **Vérifier la syntaxe JS après édition** : `node scripts/check.mjs` (défaut : `ganttPro.html`). Le script extrait le(s) bloc(s) `<script>` inline et les passe à `node --check` ; il recale les numéros de ligne d'erreur sur `ganttPro.html` et sort en code ≠ 0 en cas d'erreur. **À lancer systématiquement après toute modification du JS** — c'est le seul garde-fou hors navigateur. Attention : `node --check` ne détecte que les erreurs de *syntaxe* (accolades/parenthèses non équilibrées, etc.), pas les bugs de logique ni les globales implicites.
+- **Pas de tests automatisés** : toute vérification de *comportement* se fait manuellement dans le navigateur (charger l'app, interagir avec les tâches/le Gantt, vérifier le rendu, les exports, le localStorage).
 
 ## Architecture
 
