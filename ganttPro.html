@@ -932,6 +932,18 @@
         </div>
       </div>
       <div id="type-indicator"></div>
+      <div class="form-group" id="demote-summary-group" style="display:none">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:var(--text2)">
+          <input type="checkbox" id="f-demote-summary">
+          <span>Reclasser en tâche standard (cette tâche récapitulative n'a plus de sous-tâche)</span>
+        </label>
+      </div>
+      <div class="form-group" id="promote-summary-group" style="display:none">
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;color:var(--text2)">
+          <input type="checkbox" id="f-promote-summary">
+          <span>Convertir en tâche récapitulative (sans sous-tâche pour l'instant)</span>
+        </label>
+      </div>
     </div>
     <div id="modal-footer">
       <button class="btn btn-ghost" onclick="closeModal()">Annuler</button>
@@ -1097,14 +1109,6 @@ function getTaskType(task) {
 
 function getChildren(parentId) {
   return tasks.filter(t => t.parentId === parentId);
-}
-
-// Rétrograde une tâche récapitulative en tâche normale si elle n'a plus d'enfants
-function demoteIfEmptySummary(taskId) {
-  if (taskId === null) return;
-  const task = tasks.find(t => t.id === taskId);
-  if (!task || task.type !== 'summary') return;
-  if (getChildren(taskId).length === 0) task.type = 'standard';
 }
 
 function getDescendants(id) {
@@ -1972,6 +1976,17 @@ function openModal(forcedType, editId = null, parentId = null) {
     titleEl.textContent = type === 'milestone' ? 'Modifier le jalon' : type === 'summary' ? 'Modifier la tâche récapitulative' : 'Modifier la tâche';
     document.getElementById('f-start').disabled = false;
     document.getElementById('f-end').disabled = false;
+
+    const demoteGroup = document.getElementById('demote-summary-group');
+    const demoteCheckbox = document.getElementById('f-demote-summary');
+    const isEmptySummary = type === 'summary' && getChildren(editId).length === 0;
+    demoteGroup.style.display = isEmptySummary ? 'block' : 'none';
+    demoteCheckbox.checked = false;
+
+    const promoteGroup = document.getElementById('promote-summary-group');
+    const promoteCheckbox = document.getElementById('f-promote-summary');
+    promoteGroup.style.display = type !== 'summary' ? 'block' : 'none';
+    promoteCheckbox.checked = false;
   } else {
     const t = today();
     document.getElementById('f-name').value = '';
@@ -1981,6 +1996,8 @@ function openModal(forcedType, editId = null, parentId = null) {
     document.getElementById('f-start').disabled = false;
     document.getElementById('f-end').disabled = false;
     titleEl.textContent = forcedType === 'milestone' ? 'Nouveau jalon' : forcedType === 'summary' ? 'Nouvelle tâche récapitulative' : 'Nouvelle tâche';
+    document.getElementById('demote-summary-group').style.display = 'none';
+    document.getElementById('promote-summary-group').style.display = 'none';
   }
 
   updateTypeBadge();
@@ -2031,14 +2048,15 @@ function saveTask() {
     const task = tasks.find(t => t.id === editingTaskId);
     task.name = name;
     task.description = desc;
-    if (!task.type === 'summary' || getChildren(task.id).length === 0) {
-      task.startDate = start;
-      task.endDate = end;
-    } else {
-      task.startDate = start;
-      task.endDate = end;
-    }
-    if (task.type !== 'summary') {
+    task.startDate = start;
+    task.endDate = end;
+    const demoteCheckbox = document.getElementById('f-demote-summary');
+    const promoteCheckbox = document.getElementById('f-promote-summary');
+    if (task.type === 'summary' && demoteCheckbox.checked && getChildren(task.id).length === 0) {
+      task.type = type; // reclassement manuel en tâche standard/jalon
+    } else if (task.type !== 'summary' && promoteCheckbox.checked) {
+      task.type = 'summary'; // reclassement manuel en tâche récapitulative
+    } else if (task.type !== 'summary') {
       task.type = type;
     }
   } else {
@@ -2109,7 +2127,6 @@ function deleteTask(id, promoteChildren) {
   }
   tasks = tasks.filter(t => t.id !== id);
   if (selectedTaskId === id) selectedTaskId = null;
-  demoteIfEmptySummary(task.parentId);
   render();
 }
 
@@ -2238,8 +2255,6 @@ function applyRowReorder(srcId, tgtId, position) {
   if (getDescendants(srcId).includes(tgtId)) return;
   if (srcId === tgtId) return;
 
-  const oldParentId = src.parentId;
-
   if (position === 'into') {
     // ── Nesting : la tâche devient enfant de la cible ──
     // La cible devient automatiquement récapitulative si elle ne l'est pas
@@ -2262,7 +2277,6 @@ function applyRowReorder(srcId, tgtId, position) {
     siblings.forEach((t, i) => { t.order = i; });
   }
 
-  demoteIfEmptySummary(oldParentId);
   render();
 }
 
@@ -2330,12 +2344,10 @@ function applyNest(srcId, newParentId) {
     newParent.collapsed = false;
   }
 
-  const oldParentId = src.parentId;
   src.parentId = newParentId;
   // Placer en dernière position dans le nouveau groupe
   const siblings = tasks.filter(t => t.parentId === newParentId && t.id !== srcId);
   src.order = siblings.length;
-  demoteIfEmptySummary(oldParentId);
   render();
 }
 
