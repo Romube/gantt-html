@@ -1,3 +1,6 @@
+# Dépendances npm (outillage de dev uniquement — le livrable reste ganttPro.html)
+node_modules/
+
 # Fichiers temporaires et locaux
 *.tmp
 *~

@@ -16,11 +16,16 @@ Le projet est versionné avec git ; la branche `main` suit `origin/main` (`githu
 
 ## Commandes
 
-Il n'y a ni `package.json`, ni build, ni linter, ni suite de tests automatisée. Le workflow de développement consiste à éditer `ganttPro.html` directement puis à valider manuellement dans le navigateur.
+Il y a un `package.json` mais **uniquement pour l'outillage de dev** (check syntaxe + lint) ; il n'y a ni build, ni bundler. Le livrable reste le seul fichier `ganttPro.html`. Le développement consiste à éditer ce fichier directement, à passer les checks ci-dessous, puis à valider le comportement dans le navigateur.
+
+Prérequis outillage : `npm install` (installe ESLint et ses plugins en devDependencies ; `node_modules/` est gitignoré).
 
 - **Ouvrir l'app** : ouvrir `ganttPro.html` directement dans un navigateur (double-clic, ou `start ganttPro.html` sous Windows/PowerShell). Aucun serveur requis.
-- **Vérifier la syntaxe JS après édition** : `node scripts/check.mjs` (défaut : `ganttPro.html`). Le script extrait le(s) bloc(s) `<script>` inline et les passe à `node --check` ; il recale les numéros de ligne d'erreur sur `ganttPro.html` et sort en code ≠ 0 en cas d'erreur. **À lancer systématiquement après toute modification du JS** — c'est le seul garde-fou hors navigateur. Attention : `node --check` ne détecte que les erreurs de *syntaxe* (accolades/parenthèses non équilibrées, etc.), pas les bugs de logique ni les globales implicites.
+- **Vérifier la syntaxe JS** : `npm run check` (= `node scripts/check.mjs`). Extrait le(s) bloc(s) `<script>` inline, les passe à `node --check`, recale les numéros de ligne sur `ganttPro.html`, sort en code ≠ 0 sur erreur. Zéro dépendance (Node natif). Ne détecte que la *syntaxe*.
+- **Linter (bugs de logique)** : `npm run lint` (= `eslint ganttPro.html`). ESLint lit le `<script>` inline via `eslint-plugin-html` (numéros de ligne recalés sur le HTML). Attrape les globales implicites (`no-undef`), échappements inutiles (`no-useless-escape`), clés dupliquées, code injoignable, etc. `no-unused-vars` est désactivé car la plupart des fonctions sont appelées via `onclick=`/`oninput=` dans le HTML. **À lancer après toute modification du JS.**
 - **Pas de tests automatisés** : toute vérification de *comportement* se fait manuellement dans le navigateur (charger l'app, interagir avec les tâches/le Gantt, vérifier le rendu, les exports, le localStorage).
+
+> Note : `npm run lint` est actuellement **rouge** — il signale deux bugs produit réels déjà connus (globale implicite `curMonthYear` et `escMD()` cassé, cf. `TODO.md`), pas des faux positifs. Il repassera au vert une fois ces bugs corrigés.
 
 ## Architecture
 

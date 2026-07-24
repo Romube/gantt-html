@@ -15,15 +15,15 @@ Le manque le plus urgent : aucune historisation aujourd'hui, chaque édition d'u
 - [x] `.docx` versionné en binaire ; `.claude/settings.local.json` exclu via `.gitignore`
 - [x] Poussé vers `github.com/Romube/gantt-html` (2026-07-24). Le dépôt distant avait déjà l'historique réel (6 commits) + le fichier `ganttPro.html` ; le travail local a été replanté sur `origin/main` (pas de `git init` orphelin conservé) et poussé en fast-forward via deux commits : `2efd20f` (code) et `b94b2cf` (docs). Branche `main` suit `origin/main`.
 
-## 2. Check de syntaxe JS reproductible — `[~]`
+## 2. Check de syntaxe JS reproductible — `[x]`
 
-Aujourd'hui une erreur JS ne se voit qu'à l'ouverture dans le navigateur.
+Une erreur JS ne se voyait qu'à l'ouverture dans le navigateur ; désormais deux garde-fous en ligne de commande.
 
-- [x] `scripts/check.mjs` : extrait les blocs `<script>` inline, les passe à `node --check`, recale les numéros de ligne sur `ganttPro.html`, sort en code ≠ 0 sur erreur. Testé OK sur fichier sain et sur erreur injectée. Commande : `node scripts/check.mjs`.
+- [x] `scripts/check.mjs` (`npm run check`) : extrait les blocs `<script>` inline, les passe à `node --check`, recale les numéros de ligne sur `ganttPro.html`, sort en code ≠ 0 sur erreur. Zéro dépendance. Testé OK sur fichier sain et sur erreur injectée.
+- [x] ESLint minimal (`npm run lint`) : `package.json` + `eslint.config.js` (flat config, globales navigateur) + `eslint-plugin-html` pour linter le `<script>` inline avec numéros de ligne recalés. `node_modules/` gitignoré. Dès sa mise en place, a attrapé les deux bugs connus : globale implicite `curMonthYear` (l.1623/1626) et `escMD()` cassé (`no-useless-escape`, l.2531).
 - [x] Documenté dans `CLAUDE.md` (section Commandes)
-- [ ] (Optionnel, **en attente de décision**) ESLint pour attraper les bugs de logique / globales implicites (`curMonthYear`) — nécessite d'introduire npm + `node_modules`, ce qui déroge à l'esprit « zéro dépendance » du projet. Voir note ci-dessous.
 
-> Note ESLint : `node --check` ne voit que la syntaxe. Pour attraper la globale implicite `curMonthYear` ou le `escMD()` cassé, il faut un vrai linter (ESLint), qui implique `package.json` + `node_modules` + un `eslint.config.js` déclarant les globales navigateur. C'est le premier ajout de dépendance npm du projet → décision à prendre par l'utilisateur avant de le faire.
+> `npm run lint` est volontairement rouge tant que les bugs `curMonthYear` et `escMD` (TODO.md) ne sont pas corrigés — ce ne sont pas des faux positifs.
 
 ## 3. Découpage du fichier — `[ ]` — **décision à valider par l'utilisateur**
 
