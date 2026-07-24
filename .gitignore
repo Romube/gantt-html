@@ -1,0 +1,11 @@
+# Fichiers temporaires et locaux
+*.tmp
+*~
+.DS_Store
+Thumbs.db
+
+# Réglages locaux Claude Code (permissions spécifiques à la machine)
+.claude/settings.local.json
+
+# Fichiers temporaires LibreOffice/Word
+~$*.docx
