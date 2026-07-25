@@ -4,8 +4,8 @@ Issu de la revue de code du 2026-07-22 (agent code-reviewer). Triés du plus au 
 
 ## Sévérité haute
 
-- [ ] **XSS stockée via `innerHTML` non échappé** — `task.name`/`task.description` sont injectés bruts dans les barres Gantt (l.1555, 1558) et le tooltip (l.1868-1895) sans passer par `escapeHtml()`. Un nom de tâche contenant du HTML/JS s'exécute au rendu et se propage via l'export/import JSON.
-- [~] **Aucune détection de cycle `parentId` + aucune validation à l'import** — *partiellement corrigé (2026-07-25)* : `getDescendants()` et la remontée d'ancêtres de `getVisibleRows()` ont désormais un garde-fou (`Set` des nœuds déjà vus) et terminent sur un cycle ; couvert par `tests/hierarchy.test.js`. **Reste à faire** : `onFileLoad()` ne valide toujours pas le JSON importé (il ne vérifie que la présence de `data.tasks`) — ni les types, ni les `parentId` orphelins, ni les cycles.
+- [x] **XSS stockée via `innerHTML` non échappé** — corrigé (2026-07-25) : `escapeHtml()` appliqué aux trois points d'injection restants — barres du Gantt (`renderGantt`), tooltip (`buildTooltip`, nom **et** description) et option courante du modal de nesting (`makeNestOption`). `escapeHtml()` tolère désormais `null`/nombre. Couvert par `tests/tooltip.test.js` (seul des trois à être une fonction pure) ; les deux autres vérifiés à la main.
+- [x] **Aucune détection de cycle `parentId` + aucune validation à l'import** — corrigé (2026-07-25) en deux temps : garde-fou anti-boucle (`Set` des nœuds déjà vus) dans `getDescendants()` et la remontée d'ancêtres de `getVisibleRows()` ; puis `sanitizeProject()`, qui répare le projet chargé (entrées inexploitables écartées, dates/types/champs normalisés, `parentId` orphelins remis à la racine, cycles rompus) et résume les corrections à l'utilisateur. Branchée sur `onFileLoad()` **et** `loadFromLocalStorage()`. Couvert par `tests/import.test.js` et `tests/hierarchy.test.js`.
 
 ## Sévérité moyenne à moyenne-haute
 

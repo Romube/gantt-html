@@ -1213,7 +1213,9 @@ function clearSearch() {
 }
 
 function escapeHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // Tolère null/undefined/nombre : appelée sur des données de tâche qui peuvent
+  // venir d'un JSON importé.
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 // ═══════════════════════════════════════════════════
@@ -1559,11 +1561,12 @@ function renderGantt() {
       bar.style.height = '100%';
       bar.dataset.id = task.id;
 
+      const safeName = escapeHtml(task.name);
       if (!isSummary) {
-        bar.innerHTML = `<div class="bar-label">${task.name}</div><div class="drag-handle-left"></div><div class="drag-handle-right"></div>`;
+        bar.innerHTML = `<div class="bar-label">${safeName}</div><div class="drag-handle-left"></div><div class="drag-handle-right"></div>`;
         makeDraggable(bar, task, range, pxDay);
       } else {
-        bar.innerHTML = `<div class="bar-label">${task.name}</div><div class="summary-cap-left"></div><div class="summary-cap-right"></div>`;
+        bar.innerHTML = `<div class="bar-label">${safeName}</div><div class="summary-cap-left"></div><div class="summary-cap-right"></div>`;
       }
 
       addTooltipHandlers(bar, buildTooltip(task));
@@ -1892,13 +1895,13 @@ function moveTooltip(e) {
 function buildTooltip(task) {
   const type = getTaskType(task);
   const dur = type === 'milestone' ? 0 : dateDiff(task.startDate, task.endDate) + 1;
-  let html = `<strong style="color:var(--text)">${task.name}</strong><br>`;
+  let html = `<strong style="color:var(--text)">${escapeHtml(task.name)}</strong><br>`;
   if (type === 'summary') html += `<span style="color:var(--summary)">Tâche récapitulative</span><br>`;
   if (type === 'milestone') html += `<span style="color:var(--milestone)">Jalon</span><br>`;
   html += `<span style="color:var(--text2)">Début : ${formatDate(task.startDate)}</span><br>`;
   if (type !== 'milestone') html += `<span style="color:var(--text2)">Fin : ${formatDate(task.endDate)}</span><br>`;
   if (type !== 'milestone') html += `<span style="color:var(--text3)">Durée : ${dur} jour${dur > 1 ? 's' : ''}</span>`;
-  if (task.description) html += `<br><span style="color:var(--text3);font-size:11px">${task.description.substring(0,100)}${task.description.length > 100 ? '…' : ''}</span>`;
+  if (task.description) html += `<br><span style="color:var(--text3);font-size:11px">${escapeHtml(task.description.substring(0,100))}${task.description.length > 100 ? '…' : ''}</span>`;
   return html;
 }
 
@@ -2329,7 +2332,7 @@ function makeNestOption(targetId, label, isCurrent) {
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;`;
   opt.title = label.trim();
   if (isCurrent) {
-    opt.innerHTML = `<span style="font-size:10px;color:var(--accent)">✓</span><span style="overflow:hidden;text-overflow:ellipsis">${label}</span>`;
+    opt.innerHTML = `<span style="font-size:10px;color:var(--accent)">✓</span><span style="overflow:hidden;text-overflow:ellipsis">${escapeHtml(label)}</span>`;
   } else {
     opt.textContent = label;
   }
@@ -2850,6 +2853,139 @@ function escSVG(s) {
 // ═══════════════════════════════════════════════════
 // SAVE / LOAD
 // ═══════════════════════════════════════════════════
+
+// ─── VALIDATION DES DONNÉES CHARGÉES ───
+// Un projet peut venir d'un fichier JSON quelconque ou d'un localStorage écrit
+// par une version antérieure : rien n'y est digne de confiance. Plutôt que de
+// refuser le fichier, on le répare (valeurs par défaut, liens cassés remis à la
+// racine, cycles rompus) et on rend compte des corrections à l'utilisateur —
+// il ne doit jamais perdre son projet à cause d'un champ abîmé.
+//
+// Fonction pure (aucun accès au DOM) → testée dans tests/import.test.js.
+
+const VALID_TASK_TYPES = new Set(['standard', 'milestone', 'summary']);
+
+function isValidDateStr(s) {
+  if (typeof s !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(s)) return false;
+  const [y, m, d] = s.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  // Rejette les dates syntaxiquement correctes mais inexistantes (2026-02-31).
+  return dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d;
+}
+
+function sanitizeProject(data) {
+  if (!data || typeof data !== 'object' || !Array.isArray(data.tasks)) {
+    throw new Error('format invalide (aucune liste de tâches)');
+  }
+
+  const warnings = [];
+  const fallbackDate = today();
+  const label = (raw, i) => {
+    const n = typeof raw?.name === 'string' ? raw.name.trim() : '';
+    return n ? `« ${n} »` : `n° ${i + 1}`;
+  };
+
+  // 1) Nettoyage tâche par tâche
+  const clean = [];
+  const seenIds = new Set();
+  data.tasks.forEach((raw, i) => {
+    if (!raw || typeof raw !== 'object') {
+      warnings.push(`Entrée ${i + 1} ignorée (ce n'est pas une tâche).`);
+      return;
+    }
+    if (!Number.isInteger(raw.id)) {
+      warnings.push(`Tâche ${label(raw, i)} ignorée (identifiant manquant ou invalide).`);
+      return;
+    }
+    if (seenIds.has(raw.id)) {
+      warnings.push(`Tâche ${label(raw, i)} ignorée (identifiant ${raw.id} en double).`);
+      return;
+    }
+    seenIds.add(raw.id);
+
+    let startDate = isValidDateStr(raw.startDate) ? raw.startDate : null;
+    let endDate = isValidDateStr(raw.endDate) ? raw.endDate : null;
+    if (!startDate && !endDate) {
+      startDate = endDate = fallbackDate;
+      warnings.push(`Tâche ${label(raw, i)} : dates illisibles, remplacées par aujourd'hui.`);
+    } else if (!startDate) {
+      startDate = endDate;
+      warnings.push(`Tâche ${label(raw, i)} : date de début illisible, alignée sur la fin.`);
+    } else if (!endDate) {
+      endDate = startDate;
+      warnings.push(`Tâche ${label(raw, i)} : date de fin illisible, alignée sur le début.`);
+    }
+    if (endDate < startDate) {
+      endDate = startDate;
+      warnings.push(`Tâche ${label(raw, i)} : fin antérieure au début, corrigée.`);
+    }
+
+    let type = raw.type;
+    if (!VALID_TASK_TYPES.has(type)) {
+      if (type !== undefined && type !== null) {
+        warnings.push(`Tâche ${label(raw, i)} : type inconnu, ramenée à une tâche standard.`);
+      }
+      type = 'standard';
+    }
+
+    const name = typeof raw.name === 'string' && raw.name.trim() ? raw.name : 'Sans nom';
+    if (name === 'Sans nom') warnings.push(`Tâche n° ${i + 1} : nom manquant.`);
+
+    clean.push({
+      id: raw.id,
+      name,
+      description: typeof raw.description === 'string' ? raw.description : '',
+      startDate,
+      endDate,
+      type,
+      parentId: Number.isInteger(raw.parentId) ? raw.parentId : null,
+      order: Number.isFinite(raw.order) ? raw.order : clean.length,
+      collapsed: raw.collapsed === true,
+    });
+  });
+
+  // 2) Liens de hiérarchie : parent inexistant ou auto-référence → racine
+  const byId = new Map(clean.map(t => [t.id, t]));
+  for (const t of clean) {
+    if (t.parentId === null) continue;
+    if (t.parentId === t.id || !byId.has(t.parentId)) {
+      warnings.push(`Tâche « ${t.name} » : parent introuvable, replacée à la racine.`);
+      t.parentId = null;
+    }
+  }
+
+  // 3) Cycles : on remonte les ancêtres et on coupe le lien qui referme la boucle
+  for (const t of clean) {
+    const seen = new Set([t.id]);
+    let cur = t;
+    while (cur.parentId !== null) {
+      const parent = byId.get(cur.parentId);
+      if (!parent) break;
+      if (seen.has(parent.id)) {
+        warnings.push(`Hiérarchie circulaire : « ${cur.name} » a été replacée à la racine.`);
+        cur.parentId = null;
+        break;
+      }
+      seen.add(parent.id);
+      cur = parent;
+    }
+  }
+
+  const maxId = clean.reduce((m, t) => Math.max(m, t.id), 0);
+  const nextId = Number.isInteger(data.nextId) && data.nextId > maxId ? data.nextId : maxId + 1;
+  const name = typeof data.name === 'string' && data.name.trim() ? data.name : null;
+
+  return { tasks: clean, nextId, name, warnings };
+}
+
+// Message récapitulatif des corrections, tronqué pour rester lisible.
+function formatWarnings(warnings) {
+  const shown = warnings.slice(0, 8);
+  const rest = warnings.length - shown.length;
+  return `${warnings.length} anomalie(s) corrigée(s) dans le projet :\n\n• ${shown.join('\n• ')}`
+    + (rest > 0 ? `\n\n… et ${rest} autre(s).` : '');
+}
+
 function saveProject() {
   const data = {
     version: 1,
@@ -2871,14 +3007,14 @@ function onFileLoad(e) {
   const reader = new FileReader();
   reader.onload = (ev) => {
     try {
-      const data = JSON.parse(ev.target.result);
-      if (!data.tasks) throw new Error('Format invalide');
-      tasks = data.tasks;
-      nextId = data.nextId || (Math.max(0, ...tasks.map(t => t.id)) + 1);
-      document.getElementById('project-name').value = data.name || 'Projet chargé';
+      const clean = sanitizeProject(JSON.parse(ev.target.result));
+      tasks = clean.tasks;
+      nextId = clean.nextId;
+      document.getElementById('project-name').value = clean.name || 'Projet chargé';
       selectedTaskId = null;
       render();
       showSaveIndicator('Projet chargé ✓');
+      if (clean.warnings.length) alert(formatWarnings(clean.warnings));
     } catch(err) {
       alert('Erreur lors du chargement : ' + err.message);
     }
@@ -2896,10 +3032,14 @@ function loadFromLocalStorage() {
   const raw = localStorage.getItem('ganttPro_project');
   if (!raw) return false;
   try {
-    const data = JSON.parse(raw);
-    tasks = data.tasks || [];
-    nextId = data.nextId || (Math.max(0, ...tasks.map(t => t.id)) + 1);
-    document.getElementById('project-name').value = data.name || 'Mon Projet';
+    // Même passage par sanitizeProject() que l'import de fichier : le
+    // localStorage peut contenir un projet écrit par une version antérieure.
+    // Silencieux ici (pas d'alerte au démarrage) — les corrections seront
+    // simplement persistées au premier render().
+    const clean = sanitizeProject(JSON.parse(raw));
+    tasks = clean.tasks;
+    nextId = clean.nextId;
+    document.getElementById('project-name').value = clean.name || 'Mon Projet';
     return true;
   } catch { return false; }
 }
