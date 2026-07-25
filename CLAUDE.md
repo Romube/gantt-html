@@ -16,7 +16,7 @@ GanttPro est une application de planification de projet (diagramme de Gantt inte
 - `ganttPro.html` — **artefact généré**, versionné (pour rester ouvrable directement). Ne jamais l'éditer : lancer `npm run build` après toute modif de `src/`.
 - `README.md` — documentation utilisateur (fonctionnalités, raccourcis, historique des versions)
 - `spec_fonctionnelle_ganttPro_v3.docx` — spécification fonctionnelle détaillée
-- `TODO.md` — liste de bugs/améliorations issus d'une revue de code passée (voir « Bugs connus » ci-dessous)
+- `TODO.md` — bugs/améliorations issus d'une revue de code passée, **tous corrigés** ; voir « Règles à ne pas casser » ci-dessous
 - `ROADMAP.md` — chantier d'amélioration du workflow de développement ; consulter pour l'état d'avancement avant de reprendre ce travail
 
 Le projet est versionné avec git ; la branche `main` suit `origin/main` (`github.com/Romube/gantt-html`).
@@ -113,11 +113,12 @@ Le Gantt est rendu en éléments DOM positionnés en absolu (pas de `<canvas>`),
 
 `saveToLocalStorage()`/`loadFromLocalStorage()` (l.2882-2898) lisent/écrivent la clé `ganttPro_project` du `localStorage`. Au démarrage (`init()`, IIFE en fin de fichier), les données sont rechargées depuis le localStorage si présentes, sinon `loadDemoData()` (l.2936) génère un projet de démonstration à 3 phases.
 
-## Bugs connus (voir TODO.md pour le détail complet)
+## Règles à ne pas casser (issues des bugs corrigés — voir TODO.md)
 
-À garder à l'esprit avant de toucher au code concerné — ne pas les « redécouvrir » sans les corriger si le fix est dans le scope de la tâche demandée :
+Tous les bugs de la revue du 2026-07-22 sont corrigés (2026-07-24/25). Ce qu'il faut **maintenir** en touchant au code concerné :
 
-- **XSS stockée** : `task.name`/`task.description` sont injectés bruts via `innerHTML` dans les barres Gantt et le tooltip (`buildTooltip`) sans passer par `escapeHtml()`. Toute nouvelle fonction qui injecte du texte de tâche en HTML doit utiliser `escapeHtml()`.
-- **Import JSON non validé** : `onFileLoad()` ne vérifie que la présence de `data.tasks` — ni les types, ni les `parentId` orphelins ou cycliques. (Le *parcours* est désormais protégé : `getDescendants()` et la remontée d'ancêtres de `getVisibleRows()` ont un garde-fou anti-cycle, couvert par `tests/hierarchy.test.js`. Toute nouvelle fonction qui suit `parentId` doit faire de même.)
-- **`escMD()` est un no-op** (regex mal échappées) — un `|` dans un nom de tâche casse le tableau Markdown exporté.
-- Voir `TODO.md` pour les bugs de sévérité moyenne/faible (recherche + nœud replié, raccourci `n` qui écrase une édition en cours, Échap qui ne ferme pas le modal de nesting, variable globale implicite `curMonthYear`, tâche récapitulative orpheline jamais rétrogradée).
+- **Échappement systématique** : tout texte de tâche (`name`, `description`) injecté en HTML doit passer par `escapeHtml()` — c'est la contrepartie du rendu par `innerHTML` dans `renderGantt()`, `buildTooltip()` et `makeNestOption()`. Préférer `textContent` quand c'est possible. Pour les exports, utiliser `escSVG` / `escMD` / `escMermaid` selon le format.
+- **Aucun parcours de `parentId` sans garde-fou** : `getDescendants()` et la remontée d'ancêtres de `getVisibleRows()` protègent leur boucle par un `Set` des nœuds déjà vus. Toute nouvelle fonction qui suit `parentId` doit faire pareil.
+- **Rien n'entre sans passer par `sanitizeProject()`** : `onFileLoad()` et `loadFromLocalStorage()` réparent le projet chargé (entrées inexploitables, dates invalides, `parentId` orphelins, cycles) et signalent les corrections. Un nouveau champ du modèle de données doit y être normalisé aussi.
+- **Récapitulative sans enfant** : elle garde son type mais ses dates ne sont pilotées par personne (`recalcSummary()` sort tôt) — c'est ce qui la rend manipulable comme une tâche ordinaire. Ne pas « corriger » ce retour anticipé.
+- **Pas de `saveToLocalStorage()` dans une boucle d'interaction** : `render(false)` rend sans persister, pour les rendus intermédiaires d'un glisser-déposer (un par frame via `requestAnimationFrame`) ; la sauvegarde a lieu une fois, au relâchement.

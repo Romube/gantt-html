@@ -149,6 +149,7 @@ export function createBrowserGlobals(cssVars = {}) {
     setInterval: () => 0,
     clearInterval: () => {},
     requestAnimationFrame: () => 0,
+    cancelAnimationFrame: () => {},
     Blob: class Blob { constructor(parts) { this.parts = parts; } },
     FileReader: class FileReader { readAsText() {} },
     URL: { createObjectURL: () => 'blob:fake', revokeObjectURL: () => {} },

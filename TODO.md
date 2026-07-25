@@ -2,6 +2,8 @@
 
 Issu de la revue de code du 2026-07-22 (agent code-reviewer). Triés du plus au moins sévère.
 
+> **Liste soldée le 2026-07-25** — les 7 points sont traités, en 4 lots (sécurité, interactions, récapitulative vide, performance). Les règles à maintenir pour ne pas les réintroduire sont résumées dans `CLAUDE.md`, section « Règles à ne pas casser ».
+
 ## Sévérité haute
 
 - [x] **XSS stockée via `innerHTML` non échappé** — corrigé (2026-07-25) : `escapeHtml()` appliqué aux trois points d'injection restants — barres du Gantt (`renderGantt`), tooltip (`buildTooltip`, nom **et** description) et option courante du modal de nesting (`makeNestOption`). `escapeHtml()` tolère désormais `null`/nombre. Couvert par `tests/tooltip.test.js` (seul des trois à être une fonction pure) ; les deux autres vérifiés à la main.
@@ -21,4 +23,4 @@ Issu de la revue de code du 2026-07-22 (agent code-reviewer). Triés du plus au 
 
 ## Qualité / performance
 
-- [ ] **`render()` complet + écriture `localStorage` à chaque `mousemove` pendant un glisser-déposer** — `makeDraggable()` / `onMove` (~l.1928), peut saccader sur un gros projet.
+- [x] **`render()` complet + écriture `localStorage` à chaque `mousemove` pendant un glisser-déposer** — corrigé (2026-07-25) : `render(persist = true)` permet un rendu sans sauvegarde ; `makeDraggable()` n'appelle plus qu'un `render(false)` par frame (`requestAnimationFrame`) et fait un unique `render()` persisté au relâchement. Le `mousemove` du splitter ne rend pas, il n'était pas concerné.

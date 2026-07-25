@@ -1247,12 +1247,15 @@ function getProjectRange() {
 // ═══════════════════════════════════════════════════
 // RENDER
 // ═══════════════════════════════════════════════════
-function render() {
+// `persist` à false : rendu seul, sans écrire en localStorage. Réservé aux
+// rendus intermédiaires d'un glisser-déposer (des dizaines par seconde) — la
+// sauvegarde a lieu une fois, au relâchement.
+function render(persist = true) {
   recalcAllSummaries();
   renderTaskList();
   renderGantt();
   updateStatusBar();
-  saveToLocalStorage();
+  if (persist) saveToLocalStorage();
 }
 
 // ─── TASK LIST ───
@@ -1945,6 +1948,16 @@ function makeDraggable(bar, task, range, pxDay) {
     const origEnd = task.endDate;
     document.body.style.cursor = isMove ? 'grabbing' : 'ew-resize';
 
+    // Un mousemove peut arriver plusieurs fois par frame : on ne redessine
+    // qu'une fois par frame, et sans écrire en localStorage (sérialiser tout le
+    // projet à chaque pixel saccade sur un gros planning).
+    let frame = null;
+    let moved = false;
+    const scheduleRender = () => {
+      if (frame !== null) return;
+      frame = requestAnimationFrame(() => { frame = null; render(false); });
+    };
+
     const onMove = (ev) => {
       const dx = ev.clientX - startX;
       const days = Math.round(dx / pxDay);
@@ -1959,12 +1972,16 @@ function makeDraggable(bar, task, range, pxDay) {
         const newEnd = addDays(origEnd, days);
         if (newEnd >= origStart) task.endDate = newEnd;
       }
-      render();
+      moved = true;
+      scheduleRender();
     };
     const onUp = () => {
       document.body.style.cursor = '';
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
+      if (frame !== null) { cancelAnimationFrame(frame); frame = null; }
+      // Rendu final, celui-là persisté : c'est la seule écriture du glissement.
+      if (moved) render();
     };
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
