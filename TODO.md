@@ -17,7 +17,7 @@ Issu de la revue de code du 2026-07-22 (agent code-reviewer). Triés du plus au 
 
 - [x] **Échap ne ferme pas le modal « Nester la tâche dans… »** — corrigé (2026-07-25) : `closeNestModal()` ajoutée au handler `Escape`.
 - [x] **Variable globale implicite `curMonthYear`** — corrigé (2026-07-24) : ajoutée à la déclaration `let` de la branche `days` de `renderGanttHeader()` (l.1615), comme dans les autres branches. Bug détecté par ESLint (`no-undef`).
-- [ ] **Tâche récapitulative orpheline jamais rétrogradée** — `recalcSummary()` (l.1125-1132) ne réagit pas quand la dernière sous-tâche est supprimée/déplacée ; la tâche garde son type `summary` et ses dates figées.
+- [x] **Tâche récapitulative orpheline jamais rétrogradée** — traité (2026-07-25), avec un choix produit différent : elle **reste récapitulative** (une phase préparée à l'avance est légitime, et la case « démoter » du modal permet déjà de la reclasser). Le diagnostic du TODO était par ailleurs trop pessimiste — `recalcSummary()` sort dès qu'il n'y a plus d'enfant, donc les dates n'étaient pas figées mais bien éditables (saisie inline et modal). Seul reliquat réel corrigé : sa barre du Gantt n'était pas déplaçable ; elle l'est maintenant tant que la tâche n'a aucun enfant, avec une bordure pointillée pour la distinguer. Non-régression couverte par `tests/hierarchy.test.js` (`recalcSummary`).
 
 ## Qualité / performance
 

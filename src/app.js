@@ -554,9 +554,18 @@ function renderGantt() {
       bar.style.height = '100%';
       bar.dataset.id = task.id;
 
+      // Une récapitulative tire ses dates de ses enfants : sa barre n'est pas
+      // manipulable. Tant qu'elle n'en a aucun (phase préparée à l'avance, ou
+      // vidée de ses sous-tâches), rien ne recalcule ses dates — elle se
+      // manipule donc comme une tâche ordinaire, tout en gardant son aspect.
+      const isEmptySummary = isSummary && getChildren(task.id).length === 0;
       const safeName = escapeHtml(task.name);
       if (!isSummary) {
         bar.innerHTML = `<div class="bar-label">${safeName}</div><div class="drag-handle-left"></div><div class="drag-handle-right"></div>`;
+        makeDraggable(bar, task, range, pxDay);
+      } else if (isEmptySummary) {
+        bar.innerHTML = `<div class="bar-label">${safeName}</div><div class="drag-handle-left"></div><div class="drag-handle-right"></div>`;
+        bar.classList.add('empty-summary');
         makeDraggable(bar, task, range, pxDay);
       } else {
         bar.innerHTML = `<div class="bar-label">${safeName}</div><div class="summary-cap-left"></div><div class="summary-cap-right"></div>`;

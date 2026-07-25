@@ -83,6 +83,30 @@ test('getDescendants termine sur une auto-référence', () => {
   assert.deepEqual(plain(app.getDescendants(1).sort()), [2]);
 });
 
+test('recalcSummary aligne une récapitulative sur ses enfants', () => {
+  app.tasks = [
+    summary(1, null, { startDate: '2000-01-01', endDate: '2000-01-02' }),
+    task(2, 1, { startDate: '2026-03-01', endDate: '2026-03-10' }),
+    task(3, 1, { startDate: '2026-02-20', endDate: '2026-03-05' }),
+  ];
+  app.recalcSummary(1);
+  const s = app.tasks[0];
+  assert.equal(s.startDate, '2026-02-20', 'début = le plus tôt des enfants');
+  assert.equal(s.endDate, '2026-03-10', 'fin = le plus tard des enfants');
+});
+
+test('recalcSummary laisse ses dates à une récapitulative vide', () => {
+  // Choix produit : une récapitulative sans sous-tâche garde son type mais ses
+  // dates ne sont plus pilotées par personne — elle reste donc manipulable
+  // (barre déplaçable, saisie inline) sans être réécrasée au rendu suivant.
+  app.tasks = [summary(1, null, { startDate: '2026-04-01', endDate: '2026-04-30' })];
+  app.recalcSummary(1);
+  app.recalcAllSummaries();
+  assert.equal(app.tasks[0].startDate, '2026-04-01');
+  assert.equal(app.tasks[0].endDate, '2026-04-30');
+  assert.equal(app.tasks[0].type, 'summary', 'elle reste récapitulative');
+});
+
 test('getVisibleRows renvoie l\'arbre à plat avec les niveaux', () => {
   app.tasks = sampleTree();
   app.searchQuery = '';
