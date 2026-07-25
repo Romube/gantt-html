@@ -36,20 +36,24 @@ Choix structurant. Options envisagées : A (fichier unique), B (fichiers sépar�
 - [x] Doc mise à jour : `CLAUDE.md` (structure + « ne jamais éditer ganttPro.html » + correspondance des numéros de ligne), `README.md` (structure + workflow dev).
 - [x] Garde-fou anti-dérive : hook git `pre-commit` (`scripts/hooks/pre-commit`) qui régénère `ganttPro.html` et bloque le commit s'il est périmé. Versionné via `core.hooksPath`, activé automatiquement au `npm install` (script `prepare` → `scripts/setup-hooks.mjs`). Testé : bloque bien un commit périmé.
 
-## 4. Tests ciblés sur la logique pure — `[ ]` — dépend du point 3
+## 4. Tests ciblés sur la logique pure — `[x]`
 
-Après découpage, tester les fonctions pures les plus à risque (3-4 assertions chacune).
+Fait le 2026-07-25. **21 tests, tous verts** (`npm test`).
 
-- [ ] Détection de cycle `parentId` (`getDescendants`, `getVisibleRows`)
-- [ ] `escapeHtml` / `escMD` / `escMermaid`
-- [ ] Calculs de dates (`dateDiff`, `addDays`) — verrouiller la non-régression du bug timezone UTC corrigé en v2.0
-- [ ] Choix du runner (node:test natif suffit, pas de dépendance lourde nécessaire)
+- [x] Runner : `node:test` natif + `node:assert/strict`, zéro dépendance ajoutée.
+- [x] Harnais `tests/helpers/` : `src/app.js` est chargé **tel quel** dans un `node:vm` muni d'un faux DOM minimal (`fake-dom.mjs`), et ses fonctions/état sont exposés aux tests via `loadApp()` (`load-app.mjs`). **Aucun `export` ni aucune modification du code produit** pour les besoins des tests — le livrable reste un `<script>` inline. Le faux `getComputedStyle` relit les variables `:root` de `src/style.css` pour rester en phase.
+- [x] Calculs de dates (`tests/dates.test.js`) — `dateDiff`, `addDays`, `parseDate`, `formatDate` : non-régression du bug timezone UTC de la v2.0 (dates construites en heure locale), passage heure d'été/hiver, années bissextiles, réciprocité `addDays`/`dateDiff`.
+- [x] Échappements (`tests/escape.test.js`) — `escapeHtml` (ordre du `&`), `escMD` (verrouille la correction du no-op), `escMermaid`.
+- [x] Hiérarchie et cycles (`tests/hierarchy.test.js`) — `getChildren`, `getDescendants`, `getVisibleRows` (niveaux, tri par `order`, repli, recherche + ancêtres) et **terminaison sur un cycle `parentId`**.
+- [x] **Correctif produit associé** : `getDescendants()` et la remontée d'ancêtres de `getVisibleRows()` bouclaient à l'infini sur un cycle `parentId` (bug de `TODO.md`) — garde-fou par `Set` des nœuds déjà vus. Les tests « cycle » ont été validés en les rejouant sans le correctif : ils échouent (et ne figent pas le runner, grâce à un budget d'accès à `tasks`).
+- [x] Intégration outillage : `npm test` ; `npm run verify` = check → lint → **test** → build ; le hook `pre-commit` lance aussi les tests ; ESLint couvre désormais `tests/` (globales Node, ESM).
+
+> Reste hors périmètre (assumé) : tout ce qui dépend du rendu réel (positions en pixels, en-tête SVG, drag-and-drop, exports) — vérification manuelle dans le navigateur, comme avant.
 
 ---
 
 ## Notes de reprise
 
-- Le point 1 est indépendant et à faire en premier (il sécurise tout le reste).
-- Le point 2 est indépendant du 1.
-- Les points 3 et 4 sont liés : 4 dépend du choix fait en 3.
-- La liste des **bugs** produit (XSS, cycles `parentId`, `escMD`…) est dans `TODO.md`, distincte de ce chantier outillage.
+- **Les 4 points du chantier sont terminés (2026-07-25).** Le workflow est : éditer `src/` → `npm run verify` → commit (le hook `pre-commit` rejoue tests + build).
+- La liste des **bugs** produit (XSS, validation de l'import JSON, `render()` à chaque `mousemove`…) est dans `TODO.md`, distincte de ce chantier outillage. C'est le chantier suivant naturel : les tests sont maintenant là pour verrouiller chaque correction.
+- Pour ajouter un test : créer `tests/<sujet>.test.js`, `import { loadApp } from './helpers/load-app.mjs'`, puis `const app = loadApp()` donne accès à toute fonction top-level de `src/app.js` (et à `app.tasks` / `app.searchQuery` en lecture-écriture). Passer les valeurs renvoyées par `plain()` avant un `assert.deepEqual` (elles viennent d'un autre realm).

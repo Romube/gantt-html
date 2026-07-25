@@ -119,7 +119,12 @@ gantt-html/
 │   └── app.js                           # Logique applicative (JS vanilla)
 ├── scripts/
 │   └── build.mjs                        # Régénère ganttPro.html depuis src/
-├── package.json                         # Outillage dev (check / lint / build)
+├── tests/                               # Tests unitaires (node:test, sans dépendance)
+│   ├── dates.test.js                    # dateDiff / addDays / parseDate / formatDate
+│   ├── escape.test.js                   # escapeHtml / escMD / escMermaid
+│   ├── hierarchy.test.js                # getChildren / getDescendants / getVisibleRows
+│   └── helpers/                         # Chargement de src/app.js hors navigateur (faux DOM)
+├── package.json                         # Outillage dev (check / lint / test / build)
 ├── README.md                            # Ce fichier
 └── spec_fonctionnelle_ganttPro_v3.docx  # Spécification fonctionnelle détaillée
 ```
@@ -129,12 +134,16 @@ gantt-html/
 ```bash
 npm install        # une fois : installe l'outillage (ESLint)
 # éditer src/app.js, src/style.css ou src/index.html
-npm run verify     # check syntaxe + lint + build ganttPro.html
+npm run verify     # check syntaxe + lint + tests + build ganttPro.html
 ```
 
 Ouvrir ensuite `ganttPro.html` dans le navigateur. **On n'édite jamais `ganttPro.html` directement** : il est reconstruit par `npm run build`.
 
-Un hook git *pre-commit* (activé automatiquement au `npm install`) régénère `ganttPro.html` et refuse le commit s'il est périmé — impossible d'oublier le build.
+Un hook git *pre-commit* (activé automatiquement au `npm install`) rejoue les tests, régénère `ganttPro.html` et refuse le commit s'il est périmé — impossible d'oublier le build.
+
+### Tests
+
+`npm test` exécute la suite avec le runner natif de Node (aucune dépendance ajoutée). Elle couvre la **logique pure** : calculs de dates (dont la non-régression du bug de fuseau horaire de la v2.0), échappements des exports, hiérarchie des tâches et robustesse aux cycles `parentId`. Le reste (rendu, drag-and-drop, exports) se vérifie toujours à la main dans le navigateur.
 
 ---
 

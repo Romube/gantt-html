@@ -30,4 +30,19 @@ export default [
       'no-unused-vars': 'off',
     },
   },
+  {
+    // Les tests (chantier workflow, point 4) sont des modules ESM Node, pas du
+    // script navigateur : ils ont leurs propres globales et sourceType.
+    files: ['tests/**/*.js', 'tests/**/*.mjs'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      ...js.configs.recommended.rules,
+    },
+  },
 ];

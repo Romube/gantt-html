@@ -5,7 +5,7 @@ Issu de la revue de code du 2026-07-22 (agent code-reviewer). Triés du plus au 
 ## Sévérité haute
 
 - [ ] **XSS stockée via `innerHTML` non échappé** — `task.name`/`task.description` sont injectés bruts dans les barres Gantt (l.1555, 1558) et le tooltip (l.1868-1895) sans passer par `escapeHtml()`. Un nom de tâche contenant du HTML/JS s'exécute au rendu et se propage via l'export/import JSON.
-- [ ] **Aucune détection de cycle `parentId` + aucune validation à l'import** — `getDescendants()` (l.1114-1123) et la remontée d'ancêtres dans `getVisibleRows()` (l.1155-1161) peuvent boucler indéfiniment sur un cycle `parentId`. `onFileLoad()` (l.2860-2880) ne vérifie que la présence de `data.tasks`.
+- [~] **Aucune détection de cycle `parentId` + aucune validation à l'import** — *partiellement corrigé (2026-07-25)* : `getDescendants()` et la remontée d'ancêtres de `getVisibleRows()` ont désormais un garde-fou (`Set` des nœuds déjà vus) et terminent sur un cycle ; couvert par `tests/hierarchy.test.js`. **Reste à faire** : `onFileLoad()` ne valide toujours pas le JSON importé (il ne vérifie que la présence de `data.tasks`) — ni les types, ni les `parentId` orphelins, ni les cycles.
 
 ## Sévérité moyenne à moyenne-haute
 

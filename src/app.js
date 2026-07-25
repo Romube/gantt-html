@@ -100,10 +100,16 @@ function getChildren(parentId) {
 function getDescendants(id) {
   const result = [];
   const q = [id];
+  const seen = new Set([id]); // garde-fou : un cycle parentId ferait boucler à l'infini
   while (q.length) {
     const cur = q.shift();
     const ch = tasks.filter(t => t.parentId === cur);
-    ch.forEach(c => { result.push(c.id); q.push(c.id); });
+    ch.forEach(c => {
+      if (seen.has(c.id)) return;
+      seen.add(c.id);
+      result.push(c.id);
+      q.push(c.id);
+    });
   }
   return result;
 }
@@ -139,9 +145,11 @@ function getVisibleRows() {
       if (t.name.toLowerCase().includes(searchQuery)) {
         matchIds.add(t.id);
         let cur = t;
+        const seen = new Set([t.id]); // garde-fou anti-cycle sur la remontée d'ancêtres
         while (cur.parentId !== null) {
           const parent = tasks.find(p => p.id === cur.parentId);
-          if (!parent) break;
+          if (!parent || seen.has(parent.id)) break;
+          seen.add(parent.id);
           matchIds.add(parent.id);
           cur = parent;
         }

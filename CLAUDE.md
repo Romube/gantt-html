@@ -12,6 +12,7 @@ GanttPro est une application de planification de projet (diagramme de Gantt inte
 - `src/style.css` — tout le CSS (était dans `<style>`)
 - `src/app.js` — tout le JS vanilla (était dans `<script>`)
 - `scripts/build.mjs` — inline `style.css` + `app.js` dans le gabarit → `ganttPro.html`
+- `tests/` — tests unitaires de la logique pure (`node:test`), voir « Tests » ci-dessous
 - `ganttPro.html` — **artefact généré**, versionné (pour rester ouvrable directement). Ne jamais l'éditer : lancer `npm run build` après toute modif de `src/`.
 - `README.md` — documentation utilisateur (fonctionnalités, raccourcis, historique des versions)
 - `spec_fonctionnelle_ganttPro_v3.docx` — spécification fonctionnelle détaillée
@@ -22,23 +23,37 @@ Le projet est versionné avec git ; la branche `main` suit `origin/main` (`githu
 
 ## Commandes
 
-`package.json` sert **uniquement à l'outillage de dev** (check syntaxe, lint, build de concaténation). Pas de bundler ni de dépendance runtime : le livrable reste le fichier unique `ganttPro.html`.
+`package.json` sert **uniquement à l'outillage de dev** (check syntaxe, lint, tests, build de concaténation). Pas de bundler ni de dépendance runtime : le livrable reste le fichier unique `ganttPro.html`.
 
 Prérequis outillage : `npm install` (installe ESLint en devDependencies ; `node_modules/` est gitignoré). Le `npm install` active aussi les hooks git versionnés via le script `prepare` (`core.hooksPath = scripts/hooks`).
 
-Un **hook git pre-commit** (`scripts/hooks/pre-commit`) régénère `ganttPro.html` et **bloque le commit s'il était périmé** (désynchronisé de `src/`) — filet de sécurité contre l'oubli de `npm run build`. Si un nouveau clone n'a pas encore lancé `npm install`, activer les hooks manuellement : `git config core.hooksPath scripts/hooks`.
+Un **hook git pre-commit** (`scripts/hooks/pre-commit`) lance les tests, régénère `ganttPro.html` et **bloque le commit** si un test échoue ou si le fichier était périmé (désynchronisé de `src/`) — filet de sécurité contre l'oubli de `npm run build`. Si un nouveau clone n'a pas encore lancé `npm install`, activer les hooks manuellement : `git config core.hooksPath scripts/hooks`.
 
 - **Éditer le code** : modifier `src/app.js` (JS), `src/style.css` (CSS) ou `src/index.html` (markup) — **jamais `ganttPro.html`**.
 - **Vérifier la syntaxe JS** : `npm run check` (= `node --check src/app.js`). Zéro dépendance, ne détecte que la *syntaxe*.
-- **Linter (bugs de logique)** : `npm run lint` (= `eslint src/app.js`). Attrape les globales implicites (`no-undef`), échappements inutiles (`no-useless-escape`), clés dupliquées, code injoignable, etc. `no-unused-vars` est désactivé car la plupart des fonctions sont appelées via `onclick=`/`oninput=` dans `src/index.html`.
+- **Linter (bugs de logique)** : `npm run lint` (= `eslint src/app.js tests`). Attrape les globales implicites (`no-undef`), échappements inutiles (`no-useless-escape`), clés dupliquées, code injoignable, etc. `no-unused-vars` est désactivé sur `src/` car la plupart des fonctions sont appelées via `onclick=`/`oninput=` dans `src/index.html`.
+- **Tests unitaires** : `npm test` (= `node --test "tests/**/*.test.js"`). Voir « Tests » ci-dessous.
 - **Régénérer le livrable** : `npm run build` (= `node scripts/build.mjs`). Reconstruit `ganttPro.html` depuis `src/`. **À lancer après toute modif de `src/` et avant de committer.**
-- **Tout enchaîner** : `npm run verify` (check → lint → build).
+- **Tout enchaîner** : `npm run verify` (check → lint → test → build).
 - **Ouvrir l'app** : ouvrir `ganttPro.html` dans un navigateur (double-clic, ou `start ganttPro.html`). Aucun serveur requis.
-- **Pas de tests automatisés** : toute vérification de *comportement* se fait manuellement dans le navigateur (tâches, Gantt, rendu, exports, localStorage).
 
-> Note : `npm run lint` doit rester **vert**. S'il devient rouge, il a détecté un vrai problème — corriger, pas ignorer.
+> Note : `npm run lint` et `npm test` doivent rester **verts**. Si l'un devient rouge, il a détecté un vrai problème — corriger, pas ignorer.
 >
 > Le build est conçu pour être fidèle : au moment du découpage, `ganttPro.html` régénéré était **byte-à-byte identique** à la version pré-découpage. Un `build` ne doit jamais introduire de diff autre que celui qui découle de tes modifs dans `src/`.
+
+## Tests
+
+`tests/` contient des tests unitaires de la **logique pure** uniquement, avec le runner natif `node:test` (aucune dépendance ajoutée) : `tests/dates.test.js` (dates), `tests/escape.test.js` (échappements des exports), `tests/hierarchy.test.js` (hiérarchie + robustesse aux cycles `parentId`).
+
+Fonctionnement du harnais (`tests/helpers/`) — important à comprendre avant d'ajouter un test :
+
+- `src/app.js` est un script navigateur sans `export` (il finit inliné dans une balise `<script>`). **On ne l'instrumente pas pour les tests** : `loadApp()` l'exécute *tel quel* dans un `node:vm` muni d'un faux DOM minimal (`fake-dom.mjs`), puis expose ses fonctions et son état.
+- Dans un test : `const app = loadApp();` puis `app.dateDiff(...)`, `app.getVisibleRows()`, et lecture/écriture de `app.tasks`, `app.searchQuery`, `app.nextId`.
+- Les valeurs renvoyées viennent d'un autre *realm* : les passer par `plain()` (exporté par `load-app.mjs`) avant un `assert.deepEqual`, sinon l'assertion échoue sur les prototypes.
+- Le faux DOM ne simule que ce que le script touche au chargement. Si un ajout dans `src/app.js` utilise une API DOM absente, le chargement lève — compléter `fake-dom.mjs`, jamais contourner en modifiant `src/app.js`.
+- Pour un test de terminaison (cycles), envelopper `tasks` dans le `withCallBudget()` de `tests/hierarchy.test.js` : une boucle infinie lève au lieu de figer le runner.
+
+**Hors périmètre des tests** : tout ce qui dépend du rendu réel (positions en pixels, en-tête SVG, drag-and-drop, exports de fichiers, localStorage) — vérification **manuelle dans le navigateur**.
 
 ## Architecture
 
@@ -103,6 +118,6 @@ Le Gantt est rendu en éléments DOM positionnés en absolu (pas de `<canvas>`),
 À garder à l'esprit avant de toucher au code concerné — ne pas les « redécouvrir » sans les corriger si le fix est dans le scope de la tâche demandée :
 
 - **XSS stockée** : `task.name`/`task.description` sont injectés bruts via `innerHTML` dans les barres Gantt et le tooltip (`buildTooltip`) sans passer par `escapeHtml()`. Toute nouvelle fonction qui injecte du texte de tâche en HTML doit utiliser `escapeHtml()`.
-- **Pas de détection de cycle sur `parentId`** : `getDescendants()` et la remontée d'ancêtres dans `getVisibleRows()` peuvent boucler à l'infini sur un cycle, y compris via un import JSON non validé (`onFileLoad()` ne vérifie que la présence de `data.tasks`).
+- **Import JSON non validé** : `onFileLoad()` ne vérifie que la présence de `data.tasks` — ni les types, ni les `parentId` orphelins ou cycliques. (Le *parcours* est désormais protégé : `getDescendants()` et la remontée d'ancêtres de `getVisibleRows()` ont un garde-fou anti-cycle, couvert par `tests/hierarchy.test.js`. Toute nouvelle fonction qui suit `parentId` doit faire de même.)
 - **`escMD()` est un no-op** (regex mal échappées) — un `|` dans un nom de tâche casse le tableau Markdown exporté.
 - Voir `TODO.md` pour les bugs de sévérité moyenne/faible (recherche + nœud replié, raccourci `n` qui écrase une édition en cours, Échap qui ne ferme pas le modal de nesting, variable globale implicite `curMonthYear`, tâche récapitulative orpheline jamais rétrogradée).

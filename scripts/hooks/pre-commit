@@ -1,5 +1,6 @@
 #!/bin/sh
-# Hook pre-commit : empêche de committer un ganttPro.html périmé.
+# Hook pre-commit : lance les tests, puis empêche de committer un ganttPro.html
+# périmé.
 #
 # ganttPro.html est un artefact généré depuis src/ (voir scripts/build.mjs).
 # On régénère le fichier ; s'il change, c'est que la version présente (dans
@@ -8,6 +9,12 @@
 #
 # Activé via `git config core.hooksPath scripts/hooks` (fait automatiquement
 # au `npm install` par scripts/setup-hooks.mjs).
+
+npm test --silent >/dev/null 2>&1 || {
+  echo "✗ pre-commit : des tests échouent. Commit annulé."
+  echo "  Détail :  npm test"
+  exit 1
+}
 
 npm run build --silent >/dev/null 2>&1 || {
   echo "✗ pre-commit : 'npm run build' a échoué. Commit annulé."
