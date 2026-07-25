@@ -1,0 +1,25 @@
+#!/bin/sh
+# Hook pre-commit : empêche de committer un ganttPro.html périmé.
+#
+# ganttPro.html est un artefact généré depuis src/ (voir scripts/build.mjs).
+# On régénère le fichier ; s'il change, c'est que la version présente (dans
+# l'arbre de travail / l'index) ne correspondait pas aux sources → on bloque
+# le commit et on demande de rebuild + re-stage.
+#
+# Activé via `git config core.hooksPath scripts/hooks` (fait automatiquement
+# au `npm install` par scripts/setup-hooks.mjs).
+
+npm run build --silent >/dev/null 2>&1 || {
+  echo "✗ pre-commit : 'npm run build' a échoué. Commit annulé."
+  exit 1
+}
+
+if ! git diff --quiet -- ganttPro.html; then
+  echo "✗ pre-commit : ganttPro.html était périmé (désynchronisé de src/)."
+  echo "  Il vient d'être régénéré. Vérifie, puis :"
+  echo "      git add ganttPro.html"
+  echo "  et relance ton commit."
+  exit 1
+fi
+
+exit 0

@@ -8,7 +8,8 @@
     "check": "node --check src/app.js",
     "lint": "eslint src/app.js",
     "build": "node scripts/build.mjs",
-    "verify": "npm run check && npm run lint && npm run build"
+    "verify": "npm run check && npm run lint && npm run build",
+    "prepare": "node scripts/setup-hooks.mjs"
   },
   "license": "MIT",
   "devDependencies": {

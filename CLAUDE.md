@@ -24,7 +24,9 @@ Le projet est versionné avec git ; la branche `main` suit `origin/main` (`githu
 
 `package.json` sert **uniquement à l'outillage de dev** (check syntaxe, lint, build de concaténation). Pas de bundler ni de dépendance runtime : le livrable reste le fichier unique `ganttPro.html`.
 
-Prérequis outillage : `npm install` (installe ESLint en devDependencies ; `node_modules/` est gitignoré).
+Prérequis outillage : `npm install` (installe ESLint en devDependencies ; `node_modules/` est gitignoré). Le `npm install` active aussi les hooks git versionnés via le script `prepare` (`core.hooksPath = scripts/hooks`).
+
+Un **hook git pre-commit** (`scripts/hooks/pre-commit`) régénère `ganttPro.html` et **bloque le commit s'il était périmé** (désynchronisé de `src/`) — filet de sécurité contre l'oubli de `npm run build`. Si un nouveau clone n'a pas encore lancé `npm install`, activer les hooks manuellement : `git config core.hooksPath scripts/hooks`.
 
 - **Éditer le code** : modifier `src/app.js` (JS), `src/style.css` (CSS) ou `src/index.html` (markup) — **jamais `ganttPro.html`**.
 - **Vérifier la syntaxe JS** : `npm run check` (= `node --check src/app.js`). Zéro dépendance, ne détecte que la *syntaxe*.

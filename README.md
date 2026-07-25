@@ -134,6 +134,8 @@ npm run verify     # check syntaxe + lint + build ganttPro.html
 
 Ouvrir ensuite `ganttPro.html` dans le navigateur. **On n'édite jamais `ganttPro.html` directement** : il est reconstruit par `npm run build`.
 
+Un hook git *pre-commit* (activé automatiquement au `npm install`) régénère `ganttPro.html` et refuse le commit s'il est périmé — impossible d'oublier le build.
+
 ---
 
 ## Licence

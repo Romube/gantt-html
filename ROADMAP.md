@@ -34,6 +34,7 @@ Choix structurant. Options envisagées : A (fichier unique), B (fichiers sépar�
 - [x] **Vérifié byte-à-byte** : `ganttPro.html` régénéré = version pré-découpage, aucune différence d'octet (`cmp`). Comportement runtime prouvé inchangé.
 - [x] Outillage repointé sur les sources : `npm run check` → `node --check src/app.js`, `npm run lint` → `eslint src/app.js`. `scripts/check.mjs` (extraction HTML) et `eslint-plugin-html` supprimés (devenus inutiles). `npm run verify` enchaîne check → lint → build.
 - [x] Doc mise à jour : `CLAUDE.md` (structure + « ne jamais éditer ganttPro.html » + correspondance des numéros de ligne), `README.md` (structure + workflow dev).
+- [x] Garde-fou anti-dérive : hook git `pre-commit` (`scripts/hooks/pre-commit`) qui régénère `ganttPro.html` et bloque le commit s'il est périmé. Versionné via `core.hooksPath`, activé automatiquement au `npm install` (script `prepare` → `scripts/setup-hooks.mjs`). Testé : bloque bien un commit périmé.
 
 ## 4. Tests ciblés sur la logique pure — `[ ]` — dépend du point 3
 
