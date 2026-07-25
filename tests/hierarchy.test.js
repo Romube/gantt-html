@@ -121,6 +121,30 @@ test('getVisibleRows en recherche garde les ancêtres du résultat', () => {
   app.searchQuery = '';
 });
 
+test('getVisibleRows en recherche traverse les nœuds repliés', () => {
+  // Le résultat est deux niveaux plus bas, sous deux ancêtres repliés : il doit
+  // rester visible, sinon le compteur de résultats annonce une tâche
+  // introuvable à l'écran.
+  const tree = sampleTree();
+  tree.find(t => t.id === 1).collapsed = true;
+  tree.find(t => t.id === 3).collapsed = true;
+  tree.find(t => t.id === 4).name = 'Recette validée';
+  app.tasks = tree;
+  app.searchQuery = 'recette';
+  assert.deepEqual(plain(app.getVisibleRows().map(r => r.task.id)), [1, 3, 4]);
+  app.searchQuery = '';
+});
+
+test('le repli reprend ses droits dès que la recherche est vidée', () => {
+  const tree = sampleTree();
+  tree.find(t => t.id === 1).collapsed = true;
+  app.tasks = tree;
+  app.searchQuery = 't';       // correspond à toutes les tâches (« T1 », « T2 »…)
+  assert.deepEqual(plain(app.getVisibleRows().map(r => r.task.id)), [1, 2, 3, 4, 5]);
+  app.searchQuery = '';
+  assert.deepEqual(plain(app.getVisibleRows().map(r => r.task.id)), [1, 5]);
+});
+
 test('getVisibleRows en recherche ne boucle pas sur un cycle d\'ancêtres', () => {
   app.tasks = withCallBudget([summary(1, 3), summary(2, 1), summary(3, 2)]);
   app.searchQuery = 't2';

@@ -9,13 +9,13 @@ Issu de la revue de code du 2026-07-22 (agent code-reviewer). Triés du plus au 
 
 ## Sévérité moyenne à moyenne-haute
 
-- [ ] **Recherche + nœud replié masque le résultat trouvé** — `getVisibleRows()` (l.1169) : le compteur de résultats est correct mais une sous-tâche correspondante reste invisible si son ancêtre récapitulatif est replié.
-- [ ] **Le raccourci clavier « n » écrase une édition en cours** — l.2926, aucune vérification qu'un modal d'édition est déjà ouvert avant de rappeler `openModal('standard')`.
+- [x] **Recherche + nœud replié masque le résultat trouvé** — corrigé (2026-07-25) : en mode recherche, `getVisibleRows()` descend dans les nœuds récapitulatifs sans tenir compte de `collapsed` (seuls les nœuds pertinents sont affichés de toute façon). Le chevron de repli reflète l'affichage réel pendant la recherche. Le repli reprend ses droits dès que la recherche est vidée. Couvert par `tests/hierarchy.test.js`.
+- [x] **Le raccourci clavier « n » écrase une édition en cours** — corrigé (2026-07-25) : `isAnyModalOpen()` garde le raccourci (les overlays s'ouvrent de deux façons — classe `open` pour l'édition et la confirmation, `style.display` pour l'export et le nesting).
 - [x] **`escMD()` est un no-op** — corrigé (2026-07-24) : chaînes de remplacement passées à `'\\|'`/`'\\*'`/`'\\_'`. Bug détecté par ESLint (`no-useless-escape`).
 
 ## Sévérité faible à faible-moyenne
 
-- [ ] **Échap ne ferme pas le modal « Nester la tâche dans… »** — l.2925, `closeNestModal()` oubliée dans le handler Échap.
+- [x] **Échap ne ferme pas le modal « Nester la tâche dans… »** — corrigé (2026-07-25) : `closeNestModal()` ajoutée au handler `Escape`.
 - [x] **Variable globale implicite `curMonthYear`** — corrigé (2026-07-24) : ajoutée à la déclaration `let` de la branche `days` de `renderGanttHeader()` (l.1615), comme dans les autres branches. Bug détecté par ESLint (`no-undef`).
 - [ ] **Tâche récapitulative orpheline jamais rétrogradée** — `recalcSummary()` (l.1125-1132) ne réagit pas quand la dernière sous-tâche est supprimée/déplacée ; la tâche garde son type `summary` et ses dates figées.
 

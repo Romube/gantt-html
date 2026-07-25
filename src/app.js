@@ -160,7 +160,11 @@ function getVisibleRows() {
       tasks.filter(t => t.parentId === parentId).sort((a,b) => a.order - b.order).forEach(t => {
         if (!matchIds.has(t.id)) return;
         rows.push({ task: t, level });
-        if (t.type === 'summary' && !t.collapsed) visit(t.id, level + 1);
+        // En recherche on descend même dans un nœud replié : seuls les nœuds
+        // pertinents sont affichés, et un ancêtre replié masquerait un résultat
+        // pourtant compté dans le total. Le repli reprend ses droits dès que la
+        // recherche est vidée (branche du bas, inchangée).
+        if (t.type === 'summary') visit(t.id, level + 1);
       });
     };
     visit(null, 0);
@@ -280,10 +284,13 @@ function renderTaskList() {
     nameCell.className = 'task-name-cell';
 
     if (isSummary) {
+      // Pendant une recherche, les nœuds sont toujours dépliés (cf.
+      // getVisibleRows) : le chevron doit refléter ce qui est affiché.
+      const showCollapsed = task.collapsed && !searchQuery;
       const colBtn = document.createElement('button');
-      colBtn.className = 'collapse-btn' + (task.collapsed ? ' collapsed' : '');
+      colBtn.className = 'collapse-btn' + (showCollapsed ? ' collapsed' : '');
       colBtn.innerHTML = '<svg width="8" height="8" viewBox="0 0 8 8" fill="none"><path d="M1 2l3 4 3-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-      colBtn.title = task.collapsed ? 'Développer' : 'Réduire';
+      colBtn.title = showCollapsed ? 'Développer' : 'Réduire';
       colBtn.onclick = (e) => { e.stopPropagation(); task.collapsed = !task.collapsed; render(); };
       nameCell.appendChild(colBtn);
     } else {
@@ -2054,10 +2061,23 @@ function downloadFile(blob, filename) {
 // ═══════════════════════════════════════════════════
 // KEYBOARD SHORTCUTS
 // ═══════════════════════════════════════════════════
+// Un modal est-il ouvert ? Les overlays ne s'ouvrent pas tous de la même
+// façon : classe `open` pour l'édition, la confirmation et l'export,
+// `style.display` pour celui du nesting.
+function isAnyModalOpen() {
+  const openByClass = ['modal-overlay', 'confirm-overlay']
+    .some(id => document.getElementById(id).classList.contains('open'));
+  const openByDisplay = ['export-modal-overlay', 'nest-overlay']
+    .some(id => document.getElementById(id).style.display === 'flex');
+  return openByClass || openByDisplay;
+}
+
 document.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-  if (e.key === 'Escape') { closeModal(); closeConfirm(); closeExportModal(); }
-  if (e.key === 'n' && !e.ctrlKey) openModal('standard');
+  if (e.key === 'Escape') { closeModal(); closeConfirm(); closeExportModal(); closeNestModal(); }
+  // « n » n'ouvre une nouvelle tâche que si aucun modal n'est ouvert : sinon il
+  // écrasait l'édition en cours (le champ nom n'a pas toujours le focus).
+  if (e.key === 'n' && !e.ctrlKey && !isAnyModalOpen()) openModal('standard');
   if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveProject(); }
 });
 document.getElementById('modal-body').addEventListener('keydown', (e) => {
