@@ -108,12 +108,31 @@ Committez le fichier `.md` exporté dans votre dépôt — GitHub rend automatiq
 
 ## Structure du projet
 
+Le livrable reste **un fichier HTML unique et autonome** (`ganttPro.html`), mais il est désormais *généré* à partir de sources séparées pour faciliter le développement.
+
 ```
 gantt-html/
-├── ganttPro.html                        # Application complète (fichier unique)
+├── ganttPro.html                        # Application complète (GÉNÉRÉE — ne pas éditer)
+├── src/
+│   ├── index.html                       # Gabarit : markup + marqueurs
+│   ├── style.css                        # Feuille de styles
+│   └── app.js                           # Logique applicative (JS vanilla)
+├── scripts/
+│   └── build.mjs                        # Régénère ganttPro.html depuis src/
+├── package.json                         # Outillage dev (check / lint / build)
 ├── README.md                            # Ce fichier
 └── spec_fonctionnelle_ganttPro_v3.docx  # Spécification fonctionnelle détaillée
 ```
+
+### Développement
+
+```bash
+npm install        # une fois : installe l'outillage (ESLint)
+# éditer src/app.js, src/style.css ou src/index.html
+npm run verify     # check syntaxe + lint + build ganttPro.html
+```
+
+Ouvrir ensuite `ganttPro.html` dans le navigateur. **On n'édite jamais `ganttPro.html` directement** : il est reconstruit par `npm run build`.
 
 ---
 

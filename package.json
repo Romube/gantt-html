@@ -5,14 +5,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node scripts/check.mjs",
-    "lint": "eslint ganttPro.html"
+    "check": "node --check src/app.js",
+    "lint": "eslint src/app.js",
+    "build": "node scripts/build.mjs",
+    "verify": "npm run check && npm run lint && npm run build"
   },
   "license": "MIT",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "eslint": "^10.7.0",
-    "eslint-plugin-html": "^8.1.4",
     "globals": "^17.7.0"
   }
 }

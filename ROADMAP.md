@@ -25,16 +25,15 @@ Une erreur JS ne se voyait qu'à l'ouverture dans le navigateur ; désormais deu
 
 > `npm run lint` est passé au **vert** le 2026-07-24 après correction des deux bugs qu'il avait révélés (`curMonthYear`, `escMD` — voir TODO.md).
 
-## 3. Découpage du fichier — `[ ]` — **décision à valider par l'utilisateur**
+## 3. Découpage du fichier — `[x]` — **option B retenue**
 
-Choix structurant. Options :
-- **A** — garder le fichier unique (zéro friction, mais illisible/intestable à terme)
-- **B** — développer en fichiers séparés (`index.html` + `style.css` + `app.js`) et *builder* le fichier autonome par un script de concaténation/inline → **recommandation Claude**, préserve le livrable mono-fichier
-- **C** — modules ES + bundler (esbuild/Vite) → plus puissant, mais introduit npm + build lourd
+Choix structurant. Options envisagées : A (fichier unique), B (fichiers séparés + build de concaténation), C (bundler). **Option B retenue** (2026-07-25).
 
-- [ ] **Trancher A / B / C** (statut : option B proposée, en attente de validation)
-- [ ] Mettre en place l'arborescence et le script de build correspondant
-- [ ] Vérifier que le fichier buildé reste bit-à-bit fonctionnel et autonome
+- [x] Découpage en `src/index.html` (gabarit + marqueurs) + `src/style.css` + `src/app.js`
+- [x] `scripts/build.mjs` (`npm run build`) réinjecte CSS + JS dans le gabarit → `ganttPro.html`. Lecture/écriture en `latin1` (octet-à-octet) pour une fidélité parfaite.
+- [x] **Vérifié byte-à-byte** : `ganttPro.html` régénéré = version pré-découpage, aucune différence d'octet (`cmp`). Comportement runtime prouvé inchangé.
+- [x] Outillage repointé sur les sources : `npm run check` → `node --check src/app.js`, `npm run lint` → `eslint src/app.js`. `scripts/check.mjs` (extraction HTML) et `eslint-plugin-html` supprimés (devenus inutiles). `npm run verify` enchaîne check → lint → build.
+- [x] Doc mise à jour : `CLAUDE.md` (structure + « ne jamais éditer ganttPro.html » + correspondance des numéros de ligne), `README.md` (structure + workflow dev).
 
 ## 4. Tests ciblés sur la logique pure — `[ ]` — dépend du point 3
 

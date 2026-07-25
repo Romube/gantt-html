@@ -4,30 +4,43 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Vue d'ensemble
 
-GanttPro est une application de planification de projet (diagramme de Gantt interactif) entièrement contenue dans **un seul fichier HTML** : `ganttPro.html` (~3000 lignes : CSS inline dans `<style>`, markup, puis tout le JS vanilla dans un unique `<script>` en bas de fichier). Pas de build, pas de dépendances npm, pas de framework — tout tourne dans le navigateur sans serveur.
+GanttPro est une application de planification de projet (diagramme de Gantt interactif) livrée comme **un seul fichier HTML autonome** : `ganttPro.html` (CSS + markup + JS vanilla inline, aucune dépendance runtime, tout tourne dans le navigateur sans serveur).
 
-- `ganttPro.html` — l'application complète (seul fichier à éditer pour toute fonctionnalité)
+**Depuis le point 3 du chantier workflow, ce fichier est GÉNÉRÉ — on n'édite jamais `ganttPro.html` à la main.** Les sources vivent dans `src/` et `scripts/build.mjs` les réinjecte dans un gabarit HTML pour produire le fichier autonome :
+
+- `src/index.html` — gabarit : markup HTML + marqueurs `@@GANTT_STYLE@@` / `@@GANTT_SCRIPT@@`
+- `src/style.css` — tout le CSS (était dans `<style>`)
+- `src/app.js` — tout le JS vanilla (était dans `<script>`)
+- `scripts/build.mjs` — inline `style.css` + `app.js` dans le gabarit → `ganttPro.html`
+- `ganttPro.html` — **artefact généré**, versionné (pour rester ouvrable directement). Ne jamais l'éditer : lancer `npm run build` après toute modif de `src/`.
 - `README.md` — documentation utilisateur (fonctionnalités, raccourcis, historique des versions)
 - `spec_fonctionnelle_ganttPro_v3.docx` — spécification fonctionnelle détaillée
 - `TODO.md` — liste de bugs/améliorations issus d'une revue de code passée (voir « Bugs connus » ci-dessous)
-- `ROADMAP.md` — chantier en cours d'amélioration du workflow de développement (git, check JS, découpage du fichier, tests) ; consulter ce fichier pour l'état d'avancement avant de reprendre ce travail
+- `ROADMAP.md` — chantier d'amélioration du workflow de développement ; consulter pour l'état d'avancement avant de reprendre ce travail
 
 Le projet est versionné avec git ; la branche `main` suit `origin/main` (`github.com/Romube/gantt-html`).
 
 ## Commandes
 
-Il y a un `package.json` mais **uniquement pour l'outillage de dev** (check syntaxe + lint) ; il n'y a ni build, ni bundler. Le livrable reste le seul fichier `ganttPro.html`. Le développement consiste à éditer ce fichier directement, à passer les checks ci-dessous, puis à valider le comportement dans le navigateur.
+`package.json` sert **uniquement à l'outillage de dev** (check syntaxe, lint, build de concaténation). Pas de bundler ni de dépendance runtime : le livrable reste le fichier unique `ganttPro.html`.
 
-Prérequis outillage : `npm install` (installe ESLint et ses plugins en devDependencies ; `node_modules/` est gitignoré).
+Prérequis outillage : `npm install` (installe ESLint en devDependencies ; `node_modules/` est gitignoré).
 
-- **Ouvrir l'app** : ouvrir `ganttPro.html` directement dans un navigateur (double-clic, ou `start ganttPro.html` sous Windows/PowerShell). Aucun serveur requis.
-- **Vérifier la syntaxe JS** : `npm run check` (= `node scripts/check.mjs`). Extrait le(s) bloc(s) `<script>` inline, les passe à `node --check`, recale les numéros de ligne sur `ganttPro.html`, sort en code ≠ 0 sur erreur. Zéro dépendance (Node natif). Ne détecte que la *syntaxe*.
-- **Linter (bugs de logique)** : `npm run lint` (= `eslint ganttPro.html`). ESLint lit le `<script>` inline via `eslint-plugin-html` (numéros de ligne recalés sur le HTML). Attrape les globales implicites (`no-undef`), échappements inutiles (`no-useless-escape`), clés dupliquées, code injoignable, etc. `no-unused-vars` est désactivé car la plupart des fonctions sont appelées via `onclick=`/`oninput=` dans le HTML. **À lancer après toute modification du JS.**
-- **Pas de tests automatisés** : toute vérification de *comportement* se fait manuellement dans le navigateur (charger l'app, interagir avec les tâches/le Gantt, vérifier le rendu, les exports, le localStorage).
+- **Éditer le code** : modifier `src/app.js` (JS), `src/style.css` (CSS) ou `src/index.html` (markup) — **jamais `ganttPro.html`**.
+- **Vérifier la syntaxe JS** : `npm run check` (= `node --check src/app.js`). Zéro dépendance, ne détecte que la *syntaxe*.
+- **Linter (bugs de logique)** : `npm run lint` (= `eslint src/app.js`). Attrape les globales implicites (`no-undef`), échappements inutiles (`no-useless-escape`), clés dupliquées, code injoignable, etc. `no-unused-vars` est désactivé car la plupart des fonctions sont appelées via `onclick=`/`oninput=` dans `src/index.html`.
+- **Régénérer le livrable** : `npm run build` (= `node scripts/build.mjs`). Reconstruit `ganttPro.html` depuis `src/`. **À lancer après toute modif de `src/` et avant de committer.**
+- **Tout enchaîner** : `npm run verify` (check → lint → build).
+- **Ouvrir l'app** : ouvrir `ganttPro.html` dans un navigateur (double-clic, ou `start ganttPro.html`). Aucun serveur requis.
+- **Pas de tests automatisés** : toute vérification de *comportement* se fait manuellement dans le navigateur (tâches, Gantt, rendu, exports, localStorage).
 
-> Note : `npm run lint` doit rester **vert**. S'il devient rouge, il a détecté un vrai problème (globale implicite, échappement inutile, etc.) — corriger, pas ignorer.
+> Note : `npm run lint` doit rester **vert**. S'il devient rouge, il a détecté un vrai problème — corriger, pas ignorer.
+>
+> Le build est conçu pour être fidèle : au moment du découpage, `ganttPro.html` régénéré était **byte-à-byte identique** à la version pré-découpage. Un `build` ne doit jamais introduire de diff autre que celui qui découle de tes modifs dans `src/`.
 
 ## Architecture
+
+> Les numéros de ligne cités ci-dessous réfèrent au fichier généré `ganttPro.html` (historiquement documenté ainsi). Correspondance vers les sources : le JS de `ganttPro.html` ligne *N* se trouve à `src/app.js` ligne *N − 1015* ; le CSS ligne *N* à `src/style.css` ligne *N − 9*. En pratique, chercher par **nom de fonction** est plus robuste que par numéro de ligne.
 
 ### Modèle de données
 
