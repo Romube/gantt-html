@@ -15,6 +15,23 @@
 
 ---
 
+## Sommaire
+
+- [Historique des révisions](#historique-des-révisions)
+- [1. Contexte et objectifs](#1-contexte-et-objectifs)
+- [2. Périmètre de l'application](#2-périmètre-de-lapplication)
+- [3. Architecture générale de l'interface](#3-architecture-générale-de-linterface)
+- [4. Gestion des tâches](#4-gestion-des-tâches)
+- [5. Diagramme de Gantt](#5-diagramme-de-gantt)
+- [6. Fonctionnalités d'export, de sauvegarde et de chargement](#6-fonctionnalités-dexport-de-sauvegarde-et-de-chargement)
+- [7. Thème clair / sombre](#7-thème-clair--sombre)
+- [8. Règles de gestion](#8-règles-de-gestion)
+- [9. Interfaces utilisateur détaillées](#9-interfaces-utilisateur-détaillées)
+- [10. Exigences non fonctionnelles](#10-exigences-non-fonctionnelles)
+- [11. Glossaire](#11-glossaire)
+
+---
+
 ## Historique des révisions
 
 | Version | Date | Auteur | Modifications |

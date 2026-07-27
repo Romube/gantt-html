@@ -54,12 +54,15 @@ if (!pandoc) {
   process.exit(1);
 }
 
+// Pas de --toc : pandoc y insère un *champ* Word (« Table of Contents »), que
+// LibreOffice n'évalue pas à l'ouverture — sommaire vide et titre en anglais.
+// Le Markdown porte donc son propre sommaire, en liens vers les sections :
+// cliquable dans Word comme dans LibreOffice, et utile tel quel sur GitHub.
 const args = [
   SOURCE,
   '--from', 'gfm',              // tables pipe et syntaxe GitHub, comme rendu sur le dépôt
   '--to', 'docx',
   '--output', TARGET,
-  '--toc', '--toc-depth=2',     // sommaire (Word peut demander de le mettre à jour)
   '--metadata', 'lang=fr-FR',
 ];
 

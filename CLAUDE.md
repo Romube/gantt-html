@@ -64,6 +64,7 @@ Fonctionnement du harnais (`tests/helpers/`) — important à comprendre avant d
 - Les règles de gestion portent des identifiants stables **`RG-xx`**. En ajouter une plutôt que réécrire une règle existante quand le sens change ; ne jamais réutiliser un numéro.
 - **Traçabilité règle ↔ test** : quand un test couvre une règle, son libellé commence par la référence (`test('RG-15 — …')`). `grep -o "RG-[0-9]*" tests/*.test.js | sort -u` donne la liste des règles vérifiées automatiquement.
 - Le `.docx` diffusable est un **artefact généré** : `npm run spec:docx` (nécessite pandoc). Ne jamais l'éditer à la main, comme `ganttPro.html`.
+- Le sommaire du document est une **liste de liens écrite dans le Markdown**, pas l'option `--toc` de pandoc : celle-ci produit un champ Word que LibreOffice n'évalue pas à l'ouverture (sommaire vide, titre en anglais). En ajoutant ou renommant une section de niveau 2, mettre le sommaire à jour — attention aux ancres, qui suivent la règle GitHub (minuscules, ponctuation supprimée, espaces en tirets : « 7. Thème clair / sombre » → `#7-thème-clair--sombre`, avec deux tirets).
 - Les numéros de version sont **communs** à la spec, au `README.md` (historique + badge) et à `package.json` — les trois bougent ensemble.
 
 ## Architecture
