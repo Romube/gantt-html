@@ -1,8 +1,10 @@
-# ROADMAP — Amélioration du workflow de développement
+# ROADMAP — Outillage, qualité et documentation
 
-Chantier ouvert le 2026-07-24. Objectif : rendre le développement de `ganttPro.html` plus sûr et reproductible, **sans perdre l'atout « fichier HTML unique et autonome »** du produit livré.
+Chantier ouvert le 2026-07-24. Objectif initial : rendre le développement de `ganttPro.html` plus sûr et reproductible, **sans perdre l'atout « fichier HTML unique et autonome »** du produit livré. Élargi ensuite à la correction des bugs connus (§5) et à la spécification (§6).
 
 Statut : `[ ]` à faire · `[~]` en cours · `[x]` fait. Mettre à jour ce fichier à chaque avancée pour qu'une autre session puisse reprendre sans contexte perdu.
+
+> **État au 2026-07-27 : les 6 chantiers sont terminés, rien n'est en cours.** Version 3.2, 39 tests verts, `main` synchronisé avec `origin/main`. Pour reprendre : lire « Pistes ouvertes » et « Notes de reprise » en bas de ce fichier.
 
 ---
 
@@ -52,8 +54,41 @@ Fait le 2026-07-25. **21 tests, tous verts** (`npm test`).
 
 ---
 
+## 5. Correction des bugs de `TODO.md` — `[x]`
+
+Fait le 2026-07-25, en 4 lots thématiques (un commit par lot), chacun validé manuellement dans le navigateur avant commit. `TODO.md` est **soldé** — les règles à maintenir pour ne pas réintroduire ces bugs sont dans `CLAUDE.md`, section « Règles à ne pas casser ».
+
+- [x] **Sécurité** (`1345048`) — `escapeHtml()` sur les 3 points d'injection restants ; `sanitizeProject()` répare le projet chargé (fichier JSON **et** localStorage) et résume les corrections.
+- [x] **Interactions** (`d9c6182`) — la recherche traverse les nœuds repliés, `n` n'écrase plus une saisie, Échap ferme le modal de nesting.
+- [x] **Récapitulative vide** (`1fdec22`) — sa barre devient déplaçable (bordure pointillée) ; conforme à RG-20, que le TODO contredisait.
+- [x] **Performance** (`890c8a3`) — `render(persist)` + un rendu par frame pendant un glissement, une seule sauvegarde au relâchement.
+
+## 6. Spécification en Markdown versionné — `[x]`
+
+Fait le 2026-07-27 (`e4199d0`, `7b3cd6d`). Le `.docx` était invisible pour git : aucun diff, jamais relu, d'où deux « v3.1 » divergentes et une fonctionnalité spécifiée absente du README.
+
+- [x] `docs/spec-fonctionnelle.md` devient la **source de vérité** (conversion intégrale, accents restaurés), complétée des écarts constatés : recherche (§4.9), raccourcis clavier (§9.4), chargement tolérant (§6.4), RG-22 à RG-26.
+- [x] Traçabilité **règle ↔ test** : 26 des 39 tests citent leur `RG-xx` en libellé — `grep -o "RG-[0-9]*" tests/*.test.js | sort -u`.
+- [x] `.docx` diffusable = artefact : `npm run spec:docx` (pandoc 3.10, gitignoré). Sommaire en liens Markdown, pas `--toc` (champ Word non évalué par LibreOffice).
+- [x] Numérotation alignée : spec, README (historique + badge) et `package.json` en **3.2**.
+
+---
+
+## Pistes ouvertes (fin de session du 2026-07-27)
+
+Rien n'est en cours ni à moitié fait : l'arbre est propre, tout est poussé. Ce qui suit n'est **pas engagé** — à arbitrer en début de prochaine session.
+
+1. **Relecture de fond de la spécification convertie.** Le rendu a été validé, pas le contenu : la conversion est fidèle au `.docx` v3.1, mais certaines affirmations d'alors pouvaient déjà être obsolètes. Seul le porteur du projet peut trancher.
+2. **Gabarit Word pour le `.docx` généré.** Si la mise en forme par défaut de pandoc ne convient pas, `scripts/spec-docx.mjs` accepte un `--reference-doc <gabarit.docx>` — fournir un modèle et le brancher.
+3. **Étendre la couverture RG ↔ tests.** 11 règles sur 26 sont vérifiées automatiquement. Testables sans toucher au DOM : RG-01 (`getTaskType`), RG-12/RG-17/RG-18 (`applyRowReorder`, `applyNest` — protection anti-boucle), RG-21 (reclassement manuel dans `saveTask`). Les autres dépendent du rendu.
+4. **Tests du rendu ?** Le harnais `node:vm` s'arrête à la logique pure. Aller plus loin demanderait jsdom ou un pilotage navigateur, donc une dépendance de dev — contraire au parti pris actuel. À rouvrir seulement si un bug de rendu passe entre les mailles.
+5. **Mode de contribution.** Tout est commité directement sur `main` (workflow retenu jusqu'ici). Si une relecture par pull request est souhaitée pour le prochain chantier : créer une branche **avant** de committer, puis `gh pr create`. Rendre rétroactivement « PR-ables » des commits déjà poussés imposerait de réécrire l'historique — déconseillé.
+6. **Évolutions produit non planifiées** : dépendances entre tâches, chemin critique, % d'avancement, ressources. Explicitement **hors périmètre** dans la spec (§2.2) — un ajout supposerait de modifier ce périmètre d'abord.
+
 ## Notes de reprise
 
-- **Les 4 points du chantier sont terminés (2026-07-25).** Le workflow est : éditer `src/` → `npm run verify` → commit (le hook `pre-commit` rejoue tests + build).
-- La liste des **bugs** produit (XSS, validation de l'import JSON, `render()` à chaque `mousemove`…) est dans `TODO.md`, distincte de ce chantier outillage. C'est le chantier suivant naturel : les tests sont maintenant là pour verrouiller chaque correction.
-- Pour ajouter un test : créer `tests/<sujet>.test.js`, `import { loadApp } from './helpers/load-app.mjs'`, puis `const app = loadApp()` donne accès à toute fonction top-level de `src/app.js` (et à `app.tasks` / `app.searchQuery` en lecture-écriture). Passer les valeurs renvoyées par `plain()` avant un `assert.deepEqual` (elles viennent d'un autre realm).
+- **Chantiers 1 à 6 terminés.** Le workflow est : éditer `src/` → `npm run verify` → commit (le hook `pre-commit` rejoue tests + build et bloque si `ganttPro.html` est périmé).
+- **Ne jamais éditer** `ganttPro.html` ni `docs/spec-fonctionnelle.docx` : ce sont des artefacts générés.
+- Un changement de comportement et la règle `RG-xx` qui le décrit vont **dans le même commit** — c'est la raison d'être du passage de la spec en Markdown.
+- Pour ajouter un test : créer `tests/<sujet>.test.js`, `import { loadApp } from './helpers/load-app.mjs'`, puis `const app = loadApp()` donne accès à toute fonction top-level de `src/app.js` (et à `app.tasks` / `app.searchQuery` en lecture-écriture). Passer les valeurs renvoyées par `plain()` avant un `assert.deepEqual` (elles viennent d'un autre realm). Si le test couvre une règle, préfixer son libellé par `RG-xx — `.
+- Prérequis outillage sur une nouvelle machine : `npm install` (ESLint + hooks git), et pandoc uniquement pour `npm run spec:docx`.
