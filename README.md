@@ -2,7 +2,7 @@
 
 > Application web autonome de planification de projet avec diagramme de Gantt interactif.
 
-[![Version](https://img.shields.io/badge/version-3.1-blue)](https://github.com/Romube/gantt-html)
+[![Version](https://img.shields.io/badge/version-3.2-blue)](https://github.com/Romube/gantt-html)
 ![Licence](https://img.shields.io/badge/licence-MIT-green)
 [![HTML](https://img.shields.io/badge/HTML-autonome-orange)](ganttPro.html)
 
@@ -87,13 +87,18 @@ Committez le fichier `.md` exporté dans votre dépôt — GitHub rend automatiq
 
 ## Historique des versions
 
-### v3.1 (Juillet 2026)
+### v3.2 (Juillet 2026)
 - **Chargement de projet tolérant aux fichiers abîmés** : un JSON incomplet ou incohérent (dates illisibles, sous-tâche rattachée à une tâche inexistante, hiérarchie circulaire) est réparé au lieu d'être rejeté, et la liste des corrections est affichée. S'applique aussi à la restauration automatique depuis le navigateur.
 - Correction : un nom ou une description contenant du HTML s'affiche désormais littéralement, au lieu d'être interprété par le navigateur (faille de sécurité)
 - Correction : les résultats de recherche situés sous une phase repliée sont enfin visibles
 - Une tâche récapitulative sans sous-tâche se déplace et se redimensionne comme une tâche ordinaire (bordure pointillée pour la distinguer)
 - Correction : le raccourci `n` ne remplace plus une fiche ouverte ; Échap ferme aussi la fenêtre « Nester dans… »
 - Glisser-déposer des barres plus fluide sur les gros plannings (un rendu par image, une seule sauvegarde au relâchement)
+- La spécification fonctionnelle passe en Markdown versionné ([docs/spec-fonctionnelle.md](docs/spec-fonctionnelle.md))
+
+### v3.1 (Juillet 2026)
+- **Reclassement manuel du type d'une tâche** via le formulaire de modification, sans manipuler la hiérarchie : une récapitulative sans sous-tâche peut redevenir standard/jalon, et une tâche standard ou un jalon peut devenir récapitulative
+- Une tâche récapitulative vidée de ses sous-tâches conserve son type et ses dates éditables (elle n'est jamais rétrogradée automatiquement)
 
 ### v3.0 (Juillet 2026)
 - **Nesting** : glisser-déposer avec 3 zones (avant / **dans** / après) et bouton « Nester dans… »
@@ -131,10 +136,14 @@ gantt-html/
 │   ├── dates.test.js                    # dateDiff / addDays / parseDate / formatDate
 │   ├── escape.test.js                   # escapeHtml / escMD / escMermaid
 │   ├── hierarchy.test.js                # getChildren / getDescendants / getVisibleRows
+│   ├── import.test.js                   # sanitizeProject (réparation d'un projet chargé)
+│   ├── tooltip.test.js                  # buildTooltip (échappement)
 │   └── helpers/                         # Chargement de src/app.js hors navigateur (faux DOM)
+├── docs/
+│   └── spec-fonctionnelle.md            # Spécification fonctionnelle (source de vérité)
 ├── package.json                         # Outillage dev (check / lint / test / build)
 ├── README.md                            # Ce fichier
-└── spec_fonctionnelle_ganttPro_v3.docx  # Spécification fonctionnelle détaillée
+└── spec_fonctionnelle_ganttPro_v3.docx  # Archive de la spécification v3.1 (.docx)
 ```
 
 ### Développement
@@ -148,6 +157,16 @@ npm run verify     # check syntaxe + lint + tests + build ganttPro.html
 Ouvrir ensuite `ganttPro.html` dans le navigateur. **On n'édite jamais `ganttPro.html` directement** : il est reconstruit par `npm run build`.
 
 Un hook git *pre-commit* (activé automatiquement au `npm install`) rejoue les tests, régénère `ganttPro.html` et refuse le commit s'il est périmé — impossible d'oublier le build.
+
+### Spécification fonctionnelle
+
+La spécification vit dans [docs/spec-fonctionnelle.md](docs/spec-fonctionnelle.md) : c'est la source de vérité du comportement attendu, versionnée avec le code. Ses règles de gestion portent des identifiants stables (`RG-xx`) repris dans les libellés des tests, ce qui rend visible d'un `grep` ce qui est vérifié automatiquement.
+
+Pour en produire une version Word diffusable (artefact, non versionné) :
+
+```bash
+npm run spec:docx   # nécessite pandoc : winget install --id JohnMacFarlane.Pandoc
+```
 
 ### Tests
 

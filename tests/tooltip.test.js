@@ -29,20 +29,20 @@ function tooltipFor(extra) {
   });
 }
 
-test('buildTooltip échappe le nom de la tâche', () => {
+test('RG-22 — buildTooltip échappe le nom de la tâche', () => {
   const html = tooltipFor({ name: '<img src=x onerror=alert(1)>' });
   assert.ok(!html.includes('<img'), 'aucune balise img ne doit subsister');
   // Le texte « onerror=… » peut rester : hors d'une balise, il est inerte.
   assert.ok(html.includes('&lt;img src=x onerror=alert(1)&gt;'), 'le nom reste lisible, échappé');
 });
 
-test('buildTooltip échappe la description', () => {
+test('RG-22 — buildTooltip échappe la description', () => {
   const html = tooltipFor({ description: '<script>alert(1)</script>' });
   assert.ok(!html.includes('<script'), 'aucune balise script ne doit subsister');
   assert.ok(html.includes('&lt;script&gt;'), 'la description reste lisible, échappée');
 });
 
-test('buildTooltip échappe les deux champs à la fois', () => {
+test('RG-22 — buildTooltip échappe les deux champs à la fois', () => {
   const html = tooltipFor({ name: '</strong><b>x', description: '</span><b>y' });
   assert.ok(!html.includes('<b>'), 'aucune balise injectée');
 });

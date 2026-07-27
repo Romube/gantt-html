@@ -20,7 +20,7 @@ test('dateDiff compte les jours entre deux dates', () => {
   assert.equal(app.dateDiff('2026-01-10', '2026-01-01'), -9, 'sens inverse → négatif');
 });
 
-test('dateDiff traverse un changement d\'heure d\'été sans décalage', () => {
+test('RG-15 — dateDiff traverse un changement d\'heure d\'été sans décalage', () => {
   // Passage à l'heure d'été en Europe : nuit du 28 au 29 mars 2026 (23 h).
   // Un calcul naïf en millisecondes sans Math.round renverrait 0,958 jour.
   assert.equal(app.dateDiff('2026-03-28', '2026-03-29'), 1);
@@ -29,7 +29,7 @@ test('dateDiff traverse un changement d\'heure d\'été sans décalage', () => {
   assert.equal(app.dateDiff('2026-03-01', '2026-11-01'), 245);
 });
 
-test('addDays reste sur le bon jour civil (pas de dérive UTC)', () => {
+test('RG-15 — addDays reste sur le bon jour civil (pas de dérive UTC)', () => {
   assert.equal(app.addDays('2026-01-01', 0), '2026-01-01');
   assert.equal(app.addDays('2026-01-01', 1), '2026-01-02');
   assert.equal(app.addDays('2026-01-31', 1), '2026-02-01');
@@ -49,7 +49,7 @@ test('addDays et dateDiff sont réciproques', () => {
   }
 });
 
-test('parseDate construit une date locale (jamais UTC)', () => {
+test('RG-15 — parseDate construit une date locale (jamais UTC)', () => {
   const d = app.parseDate('2026-07-25');
   assert.equal(d.getFullYear(), 2026);
   assert.equal(d.getMonth(), 6, 'juillet = index 6');

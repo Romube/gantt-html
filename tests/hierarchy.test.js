@@ -70,7 +70,7 @@ test('getDescendants descend sur tous les niveaux', () => {
   assert.deepEqual(plain(app.getDescendants(999)), [], 'id inconnu → tableau vide');
 });
 
-test('getDescendants termine sur un cycle parentId', () => {
+test('RG-24 — getDescendants termine sur un cycle parentId', () => {
   // 1 → 2 → 3 → 1 : chaque nœud est le parent du suivant, en boucle.
   app.tasks = withCallBudget([summary(1, 3), summary(2, 1), summary(3, 2)]);
   const result = plain(app.getDescendants(1));
@@ -78,12 +78,12 @@ test('getDescendants termine sur un cycle parentId', () => {
   assert.ok(!result.includes(1), 'le point de départ ne se liste pas lui-même');
 });
 
-test('getDescendants termine sur une auto-référence', () => {
+test('RG-24 — getDescendants termine sur une auto-référence', () => {
   app.tasks = withCallBudget([summary(1, 1), task(2, 1)]);
   assert.deepEqual(plain(app.getDescendants(1).sort()), [2]);
 });
 
-test('recalcSummary aligne une récapitulative sur ses enfants', () => {
+test('RG-04 — recalcSummary aligne une récapitulative sur ses enfants', () => {
   app.tasks = [
     summary(1, null, { startDate: '2000-01-01', endDate: '2000-01-02' }),
     task(2, 1, { startDate: '2026-03-01', endDate: '2026-03-10' }),
@@ -95,7 +95,7 @@ test('recalcSummary aligne une récapitulative sur ses enfants', () => {
   assert.equal(s.endDate, '2026-03-10', 'fin = le plus tard des enfants');
 });
 
-test('recalcSummary laisse ses dates à une récapitulative vide', () => {
+test('RG-06/RG-20 — recalcSummary laisse ses dates à une récapitulative vide', () => {
   // Choix produit : une récapitulative sans sous-tâche garde son type mais ses
   // dates ne sont plus pilotées par personne — elle reste donc manipulable
   // (barre déplaçable, saisie inline) sans être réécrasée au rendu suivant.
@@ -135,7 +135,7 @@ test('getVisibleRows masque les enfants d\'un nœud replié', () => {
   assert.deepEqual(plain(app.getVisibleRows().map(r => r.task.id)), [1, 5]);
 });
 
-test('getVisibleRows en recherche garde les ancêtres du résultat', () => {
+test('RG-25 — getVisibleRows en recherche garde les ancêtres du résultat', () => {
   const tree = sampleTree();
   tree.find(t => t.id === 4).name = 'Recette validée';
   app.tasks = tree;
@@ -145,7 +145,7 @@ test('getVisibleRows en recherche garde les ancêtres du résultat', () => {
   app.searchQuery = '';
 });
 
-test('getVisibleRows en recherche traverse les nœuds repliés', () => {
+test('RG-25 — getVisibleRows en recherche traverse les nœuds repliés', () => {
   // Le résultat est deux niveaux plus bas, sous deux ancêtres repliés : il doit
   // rester visible, sinon le compteur de résultats annonce une tâche
   // introuvable à l'écran.
@@ -159,7 +159,7 @@ test('getVisibleRows en recherche traverse les nœuds repliés', () => {
   app.searchQuery = '';
 });
 
-test('le repli reprend ses droits dès que la recherche est vidée', () => {
+test('RG-25 — le repli reprend ses droits dès que la recherche est vidée', () => {
   const tree = sampleTree();
   tree.find(t => t.id === 1).collapsed = true;
   app.tasks = tree;
@@ -169,7 +169,7 @@ test('le repli reprend ses droits dès que la recherche est vidée', () => {
   assert.deepEqual(plain(app.getVisibleRows().map(r => r.task.id)), [1, 5]);
 });
 
-test('getVisibleRows en recherche ne boucle pas sur un cycle d\'ancêtres', () => {
+test('RG-24 — getVisibleRows en recherche ne boucle pas sur un cycle d\'ancêtres', () => {
   app.tasks = withCallBudget([summary(1, 3), summary(2, 1), summary(3, 2)]);
   app.searchQuery = 't2';
   // Le cycle n'est rattaché à aucune racine : rien n'est affichable, mais la

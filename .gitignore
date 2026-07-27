@@ -12,3 +12,8 @@ Thumbs.db
 
 # Fichiers temporaires LibreOffice/Word
 ~$*.docx
+
+# Spécification au format Word : artefact généré par `npm run spec:docx` depuis
+# docs/spec-fonctionnelle.md (la source de vérité, elle versionnée). Un binaire
+# regénéré à chaque édition n'a rien à faire dans l'historique.
+docs/*.docx

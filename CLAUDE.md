@@ -15,7 +15,8 @@ GanttPro est une application de planification de projet (diagramme de Gantt inte
 - `tests/` — tests unitaires de la logique pure (`node:test`), voir « Tests » ci-dessous
 - `ganttPro.html` — **artefact généré**, versionné (pour rester ouvrable directement). Ne jamais l'éditer : lancer `npm run build` après toute modif de `src/`.
 - `README.md` — documentation utilisateur (fonctionnalités, raccourcis, historique des versions)
-- `spec_fonctionnelle_ganttPro_v3.docx` — spécification fonctionnelle détaillée
+- `docs/spec-fonctionnelle.md` — **spécification fonctionnelle, source de vérité** (voir « Spécification » ci-dessous)
+- `spec_fonctionnelle_ganttPro_v3.docx` — archive de la spécification v3.1 au format Word, conservée telle quelle ; ne plus la modifier
 - `TODO.md` — bugs/améliorations issus d'une revue de code passée, **tous corrigés** ; voir « Règles à ne pas casser » ci-dessous
 - `ROADMAP.md` — chantier d'amélioration du workflow de développement ; consulter pour l'état d'avancement avant de reprendre ce travail
 
@@ -54,6 +55,16 @@ Fonctionnement du harnais (`tests/helpers/`) — important à comprendre avant d
 - Pour un test de terminaison (cycles), envelopper `tasks` dans le `withCallBudget()` de `tests/hierarchy.test.js` : une boucle infinie lève au lieu de figer le runner.
 
 **Hors périmètre des tests** : tout ce qui dépend du rendu réel (positions en pixels, en-tête SVG, drag-and-drop, exports de fichiers, localStorage) — vérification **manuelle dans le navigateur**.
+
+## Spécification
+
+`docs/spec-fonctionnelle.md` est la **source de vérité** du comportement attendu. Règles à suivre :
+
+- **Un changement de comportement et la règle qui le décrit vont dans le même commit.** C'est la raison d'être du passage en Markdown versionné (v3.2) : le `.docx` précédent avait dérivé du produit sans que rien ne le signale.
+- Les règles de gestion portent des identifiants stables **`RG-xx`**. En ajouter une plutôt que réécrire une règle existante quand le sens change ; ne jamais réutiliser un numéro.
+- **Traçabilité règle ↔ test** : quand un test couvre une règle, son libellé commence par la référence (`test('RG-15 — …')`). `grep -o "RG-[0-9]*" tests/*.test.js | sort -u` donne la liste des règles vérifiées automatiquement.
+- Le `.docx` diffusable est un **artefact généré** : `npm run spec:docx` (nécessite pandoc). Ne jamais l'éditer à la main, comme `ganttPro.html`.
+- Les numéros de version sont **communs** à la spec, au `README.md` (historique + badge) et à `package.json` — les trois bougent ensemble.
 
 ## Architecture
 

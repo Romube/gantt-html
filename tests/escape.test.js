@@ -11,7 +11,7 @@ import { loadApp } from './helpers/load-app.mjs';
 
 const app = loadApp();
 
-test('escapeHtml neutralise les balises', () => {
+test('RG-22 — escapeHtml neutralise les balises', () => {
   assert.equal(app.escapeHtml('<b>gras</b>'), '&lt;b&gt;gras&lt;/b&gt;');
   assert.equal(
     app.escapeHtml('<img src=x onerror=alert(1)>'),
@@ -21,13 +21,13 @@ test('escapeHtml neutralise les balises', () => {
   assert.equal(app.escapeHtml('rien à échapper'), 'rien à échapper');
 });
 
-test('escapeHtml échappe & en premier (pas de double échappement inversé)', () => {
+test('RG-22 — escapeHtml échappe & en premier (pas de double échappement inversé)', () => {
   // Si < était traité avant &, on obtiendrait '&amp;lt;' pour une entrée '<'.
   assert.equal(app.escapeHtml('&lt;'), '&amp;lt;');
   assert.equal(app.escapeHtml('&<>'), '&amp;&lt;&gt;');
 });
 
-test('escMD échappe les caractères qui cassent un tableau Markdown', () => {
+test('RG-19 — escMD échappe les caractères qui cassent un tableau Markdown', () => {
   assert.equal(app.escMD('Analyse | Conception'), 'Analyse \\| Conception');
   assert.equal(app.escMD('*gras*'), '\\*gras\\*');
   assert.equal(app.escMD('nom_avec_underscores'), 'nom\\_avec\\_underscores');
@@ -42,7 +42,7 @@ test('escMD échappe TOUTES les occurrences et tolère l\'absence de valeur', ()
   assert.equal(app.escMD('Phase 1 — Conception'), 'Phase 1 — Conception');
 });
 
-test('escMermaid retire les caractères que Mermaid interprète', () => {
+test('RG-19 — escMermaid retire les caractères que Mermaid interprète', () => {
   assert.equal(app.escMermaid('Phase 1 : conception'), 'Phase 1  - conception');
   assert.equal(app.escMermaid('a, b, c'), 'a  b  c');
   assert.equal(app.escMermaid('tâche #3'), 'tâche 3');
