@@ -2,7 +2,7 @@
 
 > Application web autonome de planification de projet avec diagramme de Gantt interactif.
 
-[![Version](https://img.shields.io/badge/version-3.0-blue)](https://github.com/Romube/gantt-html)
+[![Version](https://img.shields.io/badge/version-3.1-blue)](https://github.com/Romube/gantt-html)
 ![Licence](https://img.shields.io/badge/licence-MIT-green)
 [![HTML](https://img.shields.io/badge/HTML-autonome-orange)](ganttPro.html)
 
@@ -86,6 +86,14 @@ Committez le fichier `.md` exporté dans votre dépôt — GitHub rend automatiq
 ---
 
 ## Historique des versions
+
+### v3.1 (Juillet 2026)
+- **Chargement de projet tolérant aux fichiers abîmés** : un JSON incomplet ou incohérent (dates illisibles, sous-tâche rattachée à une tâche inexistante, hiérarchie circulaire) est réparé au lieu d'être rejeté, et la liste des corrections est affichée. S'applique aussi à la restauration automatique depuis le navigateur.
+- Correction : un nom ou une description contenant du HTML s'affiche désormais littéralement, au lieu d'être interprété par le navigateur (faille de sécurité)
+- Correction : les résultats de recherche situés sous une phase repliée sont enfin visibles
+- Une tâche récapitulative sans sous-tâche se déplace et se redimensionne comme une tâche ordinaire (bordure pointillée pour la distinguer)
+- Correction : le raccourci `n` ne remplace plus une fiche ouverte ; Échap ferme aussi la fenêtre « Nester dans… »
+- Glisser-déposer des barres plus fluide sur les gros plannings (un rendu par image, une seule sauvegarde au relâchement)
 
 ### v3.0 (Juillet 2026)
 - **Nesting** : glisser-déposer avec 3 zones (avant / **dans** / après) et bouton « Nester dans… »

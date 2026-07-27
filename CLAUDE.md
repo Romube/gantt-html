@@ -31,7 +31,7 @@ Un **hook git pre-commit** (`scripts/hooks/pre-commit`) lance les tests, régén
 
 - **Éditer le code** : modifier `src/app.js` (JS), `src/style.css` (CSS) ou `src/index.html` (markup) — **jamais `ganttPro.html`**.
 - **Vérifier la syntaxe JS** : `npm run check` (= `node --check src/app.js`). Zéro dépendance, ne détecte que la *syntaxe*.
-- **Linter (bugs de logique)** : `npm run lint` (= `eslint src/app.js tests`). Attrape les globales implicites (`no-undef`), échappements inutiles (`no-useless-escape`), clés dupliquées, code injoignable, etc. `no-unused-vars` est désactivé sur `src/` car la plupart des fonctions sont appelées via `onclick=`/`oninput=` dans `src/index.html`.
+- **Linter (bugs de logique)** : `npm run lint` (= `eslint src/app.js tests`). Attrape les globales implicites (`no-undef`), échappements inutiles (`no-useless-escape`), clés dupliquées, code injoignable, etc. Sur `src/`, `no-unused-vars` tourne en mode `vars: 'local'` : les déclarations globales sont ignorées (la plupart des fonctions sont appelées via `onclick=`/`oninput=` dans `src/index.html`, invisible pour le linter), mais les **variables locales** oubliées sont signalées.
 - **Tests unitaires** : `npm test` (= `node --test "tests/**/*.test.js"`). Voir « Tests » ci-dessous.
 - **Régénérer le livrable** : `npm run build` (= `node scripts/build.mjs`). Reconstruit `ganttPro.html` depuis `src/`. **À lancer après toute modif de `src/` et avant de committer.**
 - **Tout enchaîner** : `npm run verify` (check → lint → test → build).

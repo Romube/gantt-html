@@ -1,6 +1,6 @@
 {
   "name": "gantt-html",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Application web autonome de planification de projet (diagramme de Gantt) en fichier HTML unique",
   "private": true,
   "type": "module",

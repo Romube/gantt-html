@@ -1723,7 +1723,6 @@ function renderGanttHeader(range, totalW, pxDay) {
     }
     // Bottom: quarters T1–T4
     const QUARTERS = ['T1','T2','T3','T4'];
-    const QUARTER_MONTHS = [0, 3, 6, 9]; // Jan, Apr, Jul, Oct
     let prevQ = -1;
     for (let i = 0; i < totalDays; i++) {
       const d = parseDate(addDays(range.start, i));
@@ -1866,7 +1865,6 @@ function getISOWeek(date) {
 })();
 
 function syncGanttHeaderScroll(scrollLeft) {
-  const header = document.getElementById('gantt-header');
   const svg = document.getElementById('gantt-header-svg');
   svg.style.transform = `translateX(-${scrollLeft}px)`;
 }
@@ -1937,9 +1935,6 @@ function makeDraggable(bar, task, range, pxDay) {
     const isLeft = e.target.classList.contains('drag-handle-left');
     const isRight = e.target.classList.contains('drag-handle-right');
     const isMove = !isLeft && !isRight;
-    if (e.target.classList.contains('drag-handle-left') || e.target.classList.contains('drag-handle-right')) {
-      // resize
-    }
     e.preventDefault();
     e.stopPropagation();
 
@@ -2012,7 +2007,6 @@ function openModal(forcedType, editId = null, parentId = null) {
   editingParentId = parentId;
   editingForcedType = forcedType;
 
-  const modal = document.getElementById('modal');
   const overlay = document.getElementById('modal-overlay');
   const titleEl = document.getElementById('modal-title');
 
@@ -2201,10 +2195,7 @@ function centerToday() {
 
 function fitToView() {
   const range = getProjectRange();
-  const pxDay = getPxPerDay();
   const ganttBody = document.getElementById('gantt-body');
-  const totalW = dateDiff(range.start, range.end) * pxDay;
-  const scale = ganttBody.offsetWidth / totalW;
   // pick zoom that fits
   const projectDays = dateDiff(range.start, range.end);
   const ganttW2 = ganttBody.offsetWidth;
@@ -2800,7 +2791,6 @@ function exportSVG() {
     const textColor = type === 'summary' ? (currentTheme==='dark'?'#BC8CFF':'#8250DF') : type === 'milestone' ? (currentTheme==='dark'?'#F0A500':'#BF8700') : T.text;
     const fontW = type === 'summary' ? 'bold' : 'normal';
     const nameX = indent + 14;
-    const maxNameW = listW - nameX - 8;
     svg += `<text x="${nameX}" y="${textY}" font-size="${Math.max(9, rowH * 0.35)}" font-weight="${fontW}" fill="${textColor}" clip-path="none">`;
     const nameStr = escSVG(task.name);
     svg += `<tspan>${nameStr.length > 28 ? nameStr.substring(0,26) + '…' : nameStr}</tspan></text>`;

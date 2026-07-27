@@ -27,7 +27,11 @@ export default [
     },
     rules: {
       ...js.configs.recommended.rules,
-      'no-unused-vars': 'off',
+      // `vars: 'local'` : on ignore les déclarations de portée globale — la
+      // plupart des fonctions de haut niveau sont appelées via onclick=/oninput=
+      // dans src/index.html, invisible pour le linter — mais on signale bien les
+      // variables locales laissées derrière soi (vestiges de refactorisation).
+      'no-unused-vars': ['error', { vars: 'local', args: 'none', caughtErrors: 'none' }],
     },
   },
   {
