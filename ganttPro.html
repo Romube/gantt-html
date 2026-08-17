@@ -272,6 +272,8 @@
   .collapse-btn.collapsed { transform: rotate(-90deg); }
   .type-icon { flex-shrink: 0; }
   .task-label {
+    flex: 1;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -280,6 +282,14 @@
   }
   .task-label.summary { font-weight: 600; color: var(--summary); }
   .task-label.milestone { color: var(--milestone); }
+  .wbs-num {
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text3);
+    margin-right: 4px;
+    user-select: none;
+  }
   mark { background: var(--accent-dim); color: var(--accent); border-radius: 2px; padding: 0 1px; }
 
   .task-date {
@@ -1035,6 +1045,22 @@ function recalcAllSummaries() {
   order.forEach(id => recalcSummary(id));
 }
 
+function computeWbsMap() {
+  const map = new Map();
+  const visit = (parentId, prefix) => {
+    tasks
+      .filter(t => t.parentId === parentId)
+      .sort((a, b) => a.order - b.order)
+      .forEach((t, i) => {
+        const wbs = prefix ? `${prefix}.${i + 1}` : `${i + 1}`;
+        map.set(t.id, wbs);
+        visit(t.id, wbs);
+      });
+  };
+  visit(null, '');
+  return map;
+}
+
 // ═══════════════════════════════════════════════════
 // VISIBLE ROWS (search + collapse)
 // ═══════════════════════════════════════════════════
@@ -1269,6 +1295,7 @@ function renderTaskList() {
   const body = document.getElementById('task-list-body');
   const empty = document.getElementById('empty-state');
   const rows = getVisibleRows();
+  const wbsMap = computeWbsMap();
 
   // Update search count badge
   if (searchQuery) {
@@ -1338,6 +1365,13 @@ function renderTaskList() {
     else if (isSummary) icon.innerHTML = '<svg width="12" height="10" viewBox="0 0 12 10" fill="none"><rect x="0" y="2" width="12" height="4" rx="2" fill="var(--summary)" opacity=".7"/></svg>';
     else icon.innerHTML = '<svg width="12" height="8" viewBox="0 0 12 8" fill="none"><rect x="0" y="0" width="12" height="8" rx="2" fill="var(--accent)" opacity=".7"/></svg>';
     nameCell.appendChild(icon);
+
+    // WBS number
+    const wbsSpan = document.createElement('span');
+    wbsSpan.className = 'wbs-num';
+    wbsSpan.textContent = wbsMap.get(task.id) ?? '';
+    wbsSpan.setAttribute('aria-hidden', 'true');
+    nameCell.appendChild(wbsSpan);
 
     // Task label (with optional search highlight)
     const label = document.createElement('span');
